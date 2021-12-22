@@ -30,8 +30,9 @@ showDisks() {
 partDisks() {
     showDisks
 
+    clear
     result=$(whiptail --yesno "Do you want me to automatically partition and format the disk for you?" 0 0)
-    if [ $result -eq 1 ]; then
+    if [ $? -eq 1 ]; then
         gdisk $disk
         return
     fi
