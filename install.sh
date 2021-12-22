@@ -24,7 +24,7 @@ showDisks() {
 	IFS=$IFS_ORIG
     
     result=$(whiptail --title "Select a disk" --menu "" 0 0 0 "${options[@]}" 3>&1 1>&2 2>&3)
-    disk=$result
+    disk=${result%%\ *}
 }
 
 partDisks() {
@@ -124,17 +124,19 @@ runScript() {
     checkUefi
     updateSystemClock
     partDisks
-    installPackages
-    generateFstab
-    arch-chroot /mnt
-    setTimeZone
-    setLocale
-    networkConf
-    setPassword
-    installMorePackages
-    grubSetUp
-    userSetUp
-    exit
-    umount -R /mnt
+    # installPackages
+    # generateFstab
+    # arch-chroot /mnt
+    # setTimeZone
+    # setLocale
+    # networkConf
+    # setPassword
+    # installMorePackages
+    # grubSetUp
+    # userSetUp
+    # exit
+    # umount -R /mnt
     # reboot
 }
+
+runScript
