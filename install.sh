@@ -30,10 +30,10 @@ showDisks() {
 partDisks() {
     showDisks
 
-    clear
     result=$(whiptail --yesno "Do you want me to automatically partition and format the disk for you?" 0 0 3>&1 1>&2 2>&3)
     if [ $? -eq 1 ]; then
         gdisk $disk
+        # TODO: ask user for the partitions and do formatPart and mountPart
         return
     fi
 
@@ -97,8 +97,8 @@ setPassword() {
 }
 
 installMorePackages() {
-    pacman -S grub efibootmgr networkmanager network-manager-applet dialog reflector base-devel linux-headers xdg-user-dirs xdg-utils alsa-utils pipewire pipewire-alsa pipewire-pulse openssh reflector qemu qemu-arch-extra ttf-fira-code
-    pacman -S --noconfirm nvidia nvidia-utils nvidia-settings
+    pacman -Sy grub efibootmgr networkmanager network-manager-applet dialog reflector base-devel linux-headers xdg-user-dirs xdg-utils alsa-utils pipewire pipewire-alsa pipewire-pulse openssh reflector qemu qemu-arch-extra ttf-fira-code
+    pacman -Sy --noconfirm nvidia nvidia-utils nvidia-settings
 
     systemctl enable NetworkManager
     systemctl enable fstrim.timer
@@ -120,24 +120,31 @@ userSetUp() {
     usermod -aG wheel slococo
 }
 
+runInChroot() {
+    chroot /mnt /bin/bash << END
+"${1}"
+END
+}
+
 runScript() {
     whiptail --title "CocoASAIS" --msgbox "Welcome to CocoASAIS!" 0 0
-    checkUefi
-    updateSystemClock
-    partDisks
+    # checkUefi
+    # updateSystemClock
+    # partDisks
     # installPackages
-    # generateFstab
-    # arch-chroot /mnt
-    # setTimeZone
-    # setLocale
-    # networkConf
-    # setPassword
-    # installMorePackages
-    # grubSetUp
-    # userSetUp
+    generateFstab
+    arch-chroot /mnt
+    setTimeZone
+    setLocale
+    networkConf
+    setPassword
+    installMorePackages
+    grubSetUp
+    userSetUp
     # exit
     # umount -R /mnt
     # reboot
 }
 
-runScript
+# runScript
+runInChroot "ls -al"
