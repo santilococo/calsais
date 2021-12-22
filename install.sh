@@ -93,7 +93,8 @@ networkConf() {
 }
 
 setPassword() {
-    echo root:password | chpasswd
+    # echo root:password | chpasswd
+    runInChrootWithInput "passwd"
 }
 
 installMorePackages() {
@@ -110,20 +111,29 @@ grubSetUp() {
 }
 
 userSetUp() {
-    useradd -m slococo
-    echo slococo:password | chpasswd
+    runInChroot "useradd -m slococo"
+    # echo slococo:password | chpasswd
+    # echo "$(whiptail --passwordbox "Enter the root password" 0 0 1>&2)" | chpasswd
+    runInChrootWithInput "passwd slococo"
 
     # echo "slococo ALL=(ALL) ALL" >> /etc/sudoers.d/slococo
     # Uncomment wheel line:
-    EDITOR=nvim visudo
+    runInChroot "EDITOR=nvim visudo"
 
-    usermod -aG wheel slococo
+    runInChroot "usermod -aG wheel slococo"
 }
 
 runInChroot() {
-    chroot /mnt /bin/bash << END
+    arch-chroot /mnt bash -c '${1}'
+}
+
+runInChrootWithInput() {
+    cat << EOF > /mnt/runme
 ${1}
-END
+EOF
+    chmod 755 /mnt/runme
+    arch-chroot /mnt /runme
+    rm /mnt/runme
 }
 
 runScript() {
@@ -133,18 +143,15 @@ runScript() {
     # partDisks
     # installPackages
     generateFstab
-    arch-chroot /mnt
     setTimeZone
     setLocale
     networkConf
-    # setPassword
+    setPassword
     installMorePackages
     grubSetUp
-    # userSetUp
-    # exit
+    userSetUp
     # umount -R /mnt
     # reboot
 }
 
 runScript
-# runInChroot "ls -al"
