@@ -67,9 +67,74 @@ mountPart() {
     swapon "$swapPart" 
 }
 
+installPackages() {
+    pacstrap /mnt base linux linux-firmware git neovim intel-ucode
+}
+
+generateFstab() {
+    genfstab -U /mnt >> /mnt/etc/fstab
+}
+
+setTimeZone() {
+    ln -sf /usr/share/zoneinfo/America/Buenos_Aires /etc/localtime
+    hwclock --systohc
+}
+
+setLocale() {
+    sed 's/#en_US.UTF-8 UTF-8/en_US.UTF-8 UTF-8/' -i /etc/locale.gen
+    locale-gen
+    echo "LANG=en_US.UTF-8" > /etc/locale.conf
+}
+
+networkConf() {
+    echo "archLinux" > /etc/hostname
+    echo "\n127.0.0.1\tlocalhost\n::1\t\tlocalhost\n127.0.1.1\tarchLinux.localdomain archLinux" >> /etc/hosts
+}
+
+setPassword() {
+    echo root:password | chpasswd
+}
+
+installMorePackages() {
+    pacman -S grub efibootmgr networkmanager network-manager-applet dialog reflector base-devel linux-headers xdg-user-dirs xdg-utils alsa-utils pipewire pipewire-alsa pipewire-pulse openssh reflector qemu qemu-arch-extra ttf-fira-code
+    pacman -S --noconfirm nvidia nvidia-utils nvidia-settings
+
+    systemctl enable NetworkManager
+    systemctl enable fstrim.timer
+}
+
+grubSetUp() {
+    grub-install --target=x86_64-efi --efi-directory=/boot/efi --bootloader-id=GRUB
+    grub-mkconfig -o /boot/grub/grub.cfg
+}
+
+userSetUp() {
+    useradd -m slococo
+    echo slococo:password | chpasswd
+
+    # echo "slococo ALL=(ALL) ALL" >> /etc/sudoers.d/slococo
+    # Uncomment wheel line:
+    EDITOR=nvim visudo
+
+    usermod -aG wheel slococo
+}
+
 runScript() {
     whiptail --title "CocoASAIS" --msgbox "Welcome to CocoASAIS!" 0 0
     checkUefi
     updateSystemClock
     partDisks
+    installPackages
+    generateFstab
+    arch-chroot /mnt
+    setTimeZone
+    setLocale
+    networkConf
+    setPassword
+    installMorePackages
+    grubSetUp
+    userSetUp
+    exit
+    umount -R /mnt
+    # reboot
 }
