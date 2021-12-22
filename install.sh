@@ -142,7 +142,7 @@ runScript() {
     # installMorePackages
     # grubSetUp
     # userSetUp
-    runInChrootWithInput "cd $HOME/Documents; git clone https://github.com/santilococo/CocoRice.git; cd CocoRice; sh scripts/bootstrap.sh"
+    runInChrootWithInput "mkdir -p $HOME/Documents; cd $HOME/Documents/ git clone https://github.com/santilococo/CocoRice.git; cd CocoRice; sh scripts/bootstrap.sh"
     # umount -R /mnt
     # reboot
 }
