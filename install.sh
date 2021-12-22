@@ -101,7 +101,7 @@ setPassword() {
 }
 
 installMorePackages() {
-    runInChroot "pacman -Sy grub efibootmgr networkmanager network-manager-applet dialog reflector base-devel linux-headers xdg-user-dirs xdg-utils alsa-utils pipewire pipewire-alsa pipewire-pulse openssh reflector qemu qemu-arch-extra ttf-fira-code"
+    runInChroot "pacman -Sy grub efibootmgr networkmanager network-manager-applet dialog reflector base-devel linux-headers xdg-user-dirs xdg-utils alsa-utils pipewire pipewire-alsa pipewire-pulse openssh reflector qemu qemu-arch-extra ttf-fira-code sudo"
     runInChroot "pacman -S --noconfirm nvidia nvidia-utils nvidia-settings"
 
     runInChroot "systemctl enable NetworkManager"
@@ -114,16 +114,8 @@ grubSetUp() {
 }
 
 userSetUp() {
-    runInChroot "useradd -m slococo"
-    # echo slococo:password | chpasswd
-    # echo "$(whiptail --passwordbox "Enter the root password" 0 0 1>&2)" | chpasswd
-    runInChrootWithInput "passwd slococo"
-
-    # echo "slococo ALL=(ALL) ALL" >> /etc/sudoers.d/slococo
-    # Uncomment wheel line:
-    runInChroot "EDITOR=nvim visudo"
-
-    runInChroot "usermod -aG wheel slococo"
+    #runInChrootWithInput "useradd -m slococo;passwd slococo; EDITOR=nvim visudo; usermod -aG wheel slococo"
+    runInChrootWithInput "useradd -m slococo;passwd slococo; sed -i 's/# %wheel ALL=(ALL) ALL/%wheel ALL=(ALL) ALL/' /etc/sudoers; usermod -aG wheel slococo"
 }
 
 runInChroot() {
