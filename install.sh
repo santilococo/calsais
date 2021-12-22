@@ -96,13 +96,11 @@ networkConf() {
 }
 
 setPassword() {
-    # echo root:password | chpasswd
     runInChrootWithInput "passwd"
 }
 
 installMorePackages() {
-    runInChroot "pacman -Sy grub efibootmgr networkmanager network-manager-applet dialog reflector base-devel linux-headers xdg-user-dirs xdg-utils alsa-utils pipewire pipewire-alsa pipewire-pulse openssh reflector qemu qemu-arch-extra ttf-fira-code sudo"
-    runInChroot "pacman -S --noconfirm nvidia nvidia-utils nvidia-settings"
+    runInChrootWithInput "pacman -Sy --noconfirm grub efibootmgr networkmanager network-manager-applet dialog reflector base-devel linux-headers xdg-user-dirs xdg-utils alsa-utils pipewire pipewire-alsa pipewire-pulse openssh reflector qemu qemu-arch-extra ttf-fira-code sudo nvidia-utils nvidia-settings"
 
     runInChroot "systemctl enable NetworkManager"
     runInChroot "systemctl enable fstrim.timer"
@@ -114,7 +112,6 @@ grubSetUp() {
 }
 
 userSetUp() {
-    #runInChrootWithInput "useradd -m slococo;passwd slococo; EDITOR=nvim visudo; usermod -aG wheel slococo"
     runInChrootWithInput "useradd -m slococo;passwd slococo; sed -i 's/# %wheel ALL=(ALL) ALL/%wheel ALL=(ALL) ALL/' /etc/sudoers; usermod -aG wheel slococo"
 }
 
@@ -137,14 +134,15 @@ runScript() {
     # updateSystemClock
     # partDisks
     # installPackages
-    generateFstab
-    setTimeZone
-    setLocale
-    networkConf
-    setPassword
-    installMorePackages
-    grubSetUp
-    userSetUp
+    # generateFstab
+    # setTimeZone
+    # setLocale
+    # networkConf
+    # setPassword
+    # installMorePackages
+    # grubSetUp
+    # userSetUp
+    runInChrootWithInput "cd $HOME/Documents; git clone https://github.com/santilococo/CocoRice.git; cd CocoRice; sh scripts/bootstrap.sh"
     # umount -R /mnt
     # reboot
 }
