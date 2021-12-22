@@ -89,7 +89,10 @@ setLocale() {
 
 networkConf() {
     echo "archLinux" > /etc/hostname
-    echo "\n127.0.0.1\tlocalhost\n::1\t\tlocalhost\n127.0.1.1\tarchLinux.localdomain archLinux" >> /etc/hosts
+    echo "
+127.0.0.1   localhost
+::1     localhost
+127.0.1.1   archLinux.localdomain archLinux" >> /etc/hosts
 }
 
 setPassword() {
