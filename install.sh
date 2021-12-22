@@ -48,7 +48,7 @@ partDisks() {
 
 autoPart() {
     # Create new GPT disklabel
-    yes | parted $disk mklabel gpt
+    yes | parted $disk mklabel gpt 2> /dev/null
 
 	sgdisk $disk -n=1:0:+300M -t=1:ef00 > /dev/null
 	sgdisk $disk -n=2:0:+1024M -t=2:8200 > /dev/null
@@ -56,9 +56,9 @@ autoPart() {
 }
 
 formatPart() {
-    mkfs.fat -F 32 "$bootPart" > /dev/null
-    mkswap "$swapPart" > /dev/null
-    mkfs.ext4 "$rootPart" > /dev/null
+    mkfs.fat -F 32 "$bootPart" > /dev/null 2>&1
+    mkswap "$swapPart" > /dev/null 2>&1
+    mkfs.ext4 "$rootPart" > /dev/null 2>&1
 }
 
 mountPart() {
