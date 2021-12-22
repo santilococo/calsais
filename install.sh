@@ -78,12 +78,12 @@ generateFstab() {
 
 setTimeZone() {
     ln -sf /usr/share/zoneinfo/America/Buenos_Aires /etc/localtime
-    hwclock --systohc
+    runInChroot "hwclock --systohc"
 }
 
 setLocale() {
     sed 's/#en_US.UTF-8 UTF-8/en_US.UTF-8 UTF-8/' -i /etc/locale.gen
-    locale-gen
+    runInChroot "locale-gen"
     echo "LANG=en_US.UTF-8" > /etc/locale.conf
 }
 
@@ -97,16 +97,16 @@ setPassword() {
 }
 
 installMorePackages() {
-    pacman -Sy grub efibootmgr networkmanager network-manager-applet dialog reflector base-devel linux-headers xdg-user-dirs xdg-utils alsa-utils pipewire pipewire-alsa pipewire-pulse openssh reflector qemu qemu-arch-extra ttf-fira-code
-    pacman -Sy --noconfirm nvidia nvidia-utils nvidia-settings
+    runInChroot "pacman -Sy grub efibootmgr networkmanager network-manager-applet dialog reflector base-devel linux-headers xdg-user-dirs xdg-utils alsa-utils pipewire pipewire-alsa pipewire-pulse openssh reflector qemu qemu-arch-extra ttf-fira-code"
+    runInChroot "pacman -S --noconfirm nvidia nvidia-utils nvidia-settings"
 
-    systemctl enable NetworkManager
-    systemctl enable fstrim.timer
+    runInChroot "systemctl enable NetworkManager"
+    runInChroot "systemctl enable fstrim.timer"
 }
 
 grubSetUp() {
-    grub-install --target=x86_64-efi --efi-directory=/boot/efi --bootloader-id=GRUB
-    grub-mkconfig -o /boot/grub/grub.cfg
+    runInChroot "grub-install --target=x86_64-efi --efi-directory=/boot/efi --bootloader-id=GRUB"
+    runInChroot "grub-mkconfig -o /boot/grub/grub.cfg"
 }
 
 userSetUp() {
@@ -122,7 +122,7 @@ userSetUp() {
 
 runInChroot() {
     chroot /mnt /bin/bash << END
-"${1}"
+${1}
 END
 }
 
@@ -137,14 +137,14 @@ runScript() {
     setTimeZone
     setLocale
     networkConf
-    setPassword
+    # setPassword
     installMorePackages
     grubSetUp
-    userSetUp
+    # userSetUp
     # exit
     # umount -R /mnt
     # reboot
 }
 
-# runScript
-runInChroot "ls -al"
+runScript
+# runInChroot "ls -al"
