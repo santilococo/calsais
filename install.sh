@@ -73,7 +73,7 @@ installPackages() {
 }
 
 generateFstab() {
-    genfstab -U /mnt >> /mnt/etc/fstab
+    genfstab -U /mnt > /mnt/etc/fstab
 }
 
 setTimeZone() {
@@ -107,6 +107,7 @@ installMorePackages() {
 }
 
 grubSetUp() {
+    # TODO: ver si se corre esto....
     runInChroot "grub-install --target=x86_64-efi --efi-directory=/boot/efi --bootloader-id=GRUB"
     runInChroot "grub-mkconfig -o /boot/grub/grub.cfg"
 }
