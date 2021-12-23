@@ -139,7 +139,7 @@ getDotfiles() {
 }
 
 runScript() {
-    if [ -d "$HOME/Documents"]; then
+    if [ -d "$HOME/Documents" ]; then
         getDotfiles
         exit 1
     fi
