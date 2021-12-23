@@ -3,7 +3,7 @@
 checkUefi() {
     ls /sys/firmware/efi/efivars > /dev/null 2>&1
     if [ $? -ge 1 ]; then
-        echo "This scripts supports only UEFI boot mode."
+        whiptail --msgbox "This scripts supports only UEFI boot mode." 0 0
         exit 1
     fi
 }
@@ -47,7 +47,7 @@ partDisks() {
 }
 
 autoPart() {
-    yes | parted $disk mklabel gpt 2> /dev/null
+    parted -s $disk mklabel gpt 2> /dev/null
 
 	sgdisk $disk -n=1:0:+300M -t=1:ef00 > /dev/null
 	sgdisk $disk -n=2:0:+1024M -t=2:8200 > /dev/null
