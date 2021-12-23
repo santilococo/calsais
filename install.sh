@@ -47,7 +47,6 @@ partDisks() {
 }
 
 autoPart() {
-    # Create new GPT disklabel
     yes | parted $disk mklabel gpt 2> /dev/null
 
 	sgdisk $disk -n=1:0:+300M -t=1:ef00 > /dev/null
@@ -78,12 +77,12 @@ generateFstab() {
 
 setTimeZone() {
     ln -sf /usr/share/zoneinfo/America/Buenos_Aires /etc/localtime
-    runInChroot "hwclock --systohc"
+    runInChrootWithInput "hwclock --systohc"
 }
 
 setLocale() {
     sed 's/#en_US.UTF-8 UTF-8/en_US.UTF-8 UTF-8/' -i /etc/locale.gen
-    runInChroot "locale-gen"
+    runInChrootWithInput "locale-gen"
     echo "LANG=en_US.UTF-8" > /etc/locale.conf
 }
 
@@ -100,16 +99,12 @@ setPassword() {
 }
 
 installMorePackages() {
-    runInChrootWithInput "pacman -Sy --noconfirm grub efibootmgr networkmanager network-manager-applet dialog reflector base-devel linux-headers xdg-user-dirs xdg-utils alsa-utils pipewire pipewire-alsa pipewire-pulse openssh reflector qemu qemu-arch-extra ttf-fira-code sudo nvidia-utils nvidia-settings"
-
-    runInChroot "systemctl enable NetworkManager"
-    runInChroot "systemctl enable fstrim.timer"
+    runInChrootWithInput "pacman -Sy --noconfirm grub efibootmgr networkmanager network-manager-applet dialog reflector base-devel linux-headers xdg-user-dirs xdg-utils alsa-utils pipewire pipewire-alsa pipewire-pulse openssh reflector qemu qemu-arch-extra ttf-fira-code sudo nvidia-utils nvidia-settings xorg"
+    runInChrootWithInput "systemctl enable NetworkManager; systemctl enable fstrim.timer"
 }
 
 grubSetUp() {
-    # TODO: ver si se corre esto....
-    runInChroot "grub-install --target=x86_64-efi --efi-directory=/boot/efi --bootloader-id=GRUB"
-    runInChroot "grub-mkconfig -o /boot/grub/grub.cfg"
+    runInChrootWithInput "grub-install --target=x86_64-efi --efi-directory=/boot/efi --bootloader-id=GRUB; grub-mkconfig -o /boot/grub/grub.cfg"
 }
 
 userSetUp() {
@@ -129,23 +124,40 @@ EOF
     rm /mnt/runme
 }
 
+finishInstallation() {
+    umount -R /mnt
+    reboot
+}
+
+getDotfiles() {
+    local lastFolder=$(pwd -P)
+    cd $HOME/Documents
+    git clone https://github.com/santilococo/CocoRice.git
+    cd CocoRice
+    sh scripts/bootstrap.sh
+    cd lastFolder
+}
+
 runScript() {
+    if [ -d "$HOME/Documents"]; then
+        getDotfiles
+        exit 1
+    fi
+
     whiptail --title "CocoASAIS" --msgbox "Welcome to CocoASAIS!" 0 0
-    # checkUefi
-    # updateSystemClock
-    # partDisks
-    # installPackages
-    # generateFstab
-    # setTimeZone
-    # setLocale
-    # networkConf
-    # setPassword
-    # installMorePackages
-    # grubSetUp
-    # userSetUp
-    runInChrootWithInput "mkdir -p $HOME/Documents; cd $HOME/Documents/ git clone https://github.com/santilococo/CocoRice.git; cd CocoRice; sh scripts/bootstrap.sh"
-    # umount -R /mnt
-    # reboot
+    checkUefi
+    updateSystemClock
+    partDisks
+    installPackages
+    generateFstab
+    setTimeZone
+    setLocale
+    networkConf
+    setPassword
+    installMorePackages
+    grubSetUp
+    userSetUp
+    finishInstallation
 }
 
 runScript
