@@ -129,7 +129,16 @@ finishInstallation() {
     reboot
 }
 
+installLastPrograms() {
+    sudo pacman -S xorg xorg-xinit
+    # TODO: Use csv to install all the programs
+    sudo pacman -S zsh
+    sh -c "$(curl -fsSL https://raw.github.com/ohmyzsh/ohmyzsh/master/tools/install.sh)"
+    git clone https://github.com/romkatv/powerlevel10k.git $ZSH_CUSTOM/themes/powerlevel10k
+}
+
 getDotfiles() {
+    installLastPrograms
     local lastFolder=$(pwd -P)
     cd $HOME/Documents
     git clone https://github.com/santilococo/CocoRice.git
