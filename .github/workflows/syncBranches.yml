@@ -39,12 +39,11 @@ jobs:
           git config --local user.email "$(git log --format=%ae | head -n 1)"
           mv cocoArtifact/install.sh index.html
           rm -rf cocoArtifact
-          if [ -z "$(git status --porcelain)" ]; then
-            return
+          if [ ! -z "$(git status --porcelain)" ]; then
+            git add index.html
+            git commit -m "Add changes from master branch"
+            git push
           fi
-          git add index.html
-          git commit -m "Add changes from master branch"
-          git push
                 
       - uses: geekyeggo/delete-artifact@v1
         with:
