@@ -1,0 +1,60 @@
+name: CI - syncBranches
+
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
+
+  workflow_dispatch:
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:    
+      - uses: actions/checkout@v2
+          
+      - uses: actions/upload-artifact@v2
+        with:
+          name: cocoArtifact
+          path: install.sh
+          
+      - uses: actions/checkout@v2
+        with:
+          ref: gh-pages
+          
+      - name: Delete old index.html
+        run: |
+          rm index.html
+          
+      - uses: actions/download-artifact@v2
+        with:
+          name: cocoArtifact
+          path: cocoArtifact
+
+      - name: Push to gh-pages
+        run: |
+          ls -R
+          cat cocoArtifact/install.sh
+          git config --local user.name "$(git log --format=%an | head -n 1)"
+          git config --local user.email "$(git log --format=%ae | head -n 1)"
+          mv cocoArtifact/install.sh index.html
+          git status
+          git diff --cached --exit-code
+          if [ $? -eq 1 ]; then
+            echo "Acá funciona?"
+          fi
+          git add index.html
+          rm -rf cocoArtifact
+          git status
+          gStatus=$(git status)
+          if echo $gStatus | grep -q "Changes to be committed"; then
+            echo "Hay cambios sin commitear"
+            git commit -m "Add changes from master branch"
+            git push
+          fi
+                
+      - uses: geekyeggo/delete-artifact@v1
+        with:
+          name: pruebaArtifact
