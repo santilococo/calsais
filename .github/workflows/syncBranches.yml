@@ -1,4 +1,4 @@
-name: CI - syncBranches
+name: sync-branches
 
 on:
   push:
@@ -9,7 +9,7 @@ on:
   workflow_dispatch:
 
 jobs:
-  build:
+  sync:
     runs-on: ubuntu-latest
 
     steps:    
