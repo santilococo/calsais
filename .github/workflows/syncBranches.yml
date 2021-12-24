@@ -35,19 +35,15 @@ jobs:
 
       - name: Push to gh-pages
         run: |
-          ls -R
-          cat cocoArtifact/install.sh
           git config --local user.name "$(git log --format=%an | head -n 1)"
           git config --local user.email "$(git log --format=%ae | head -n 1)"
           mv cocoArtifact/install.sh index.html
           git status
-          git diff --cached --exit-code
-          if [ $? -eq 1 ]; then
+          if [ -z $(git status --porcelain)" ]; then
             echo "Acá funciona?"
           fi
           git add index.html
           rm -rf cocoArtifact
-          git status
           gStatus=$(git status)
           if echo $gStatus | grep -q "Changes to be committed"; then
             echo "Hay cambios sin commitear"
@@ -57,4 +53,4 @@ jobs:
                 
       - uses: geekyeggo/delete-artifact@v1
         with:
-          name: pruebaArtifact
+          name: cocoArtifact
