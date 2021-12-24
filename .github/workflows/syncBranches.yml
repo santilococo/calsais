@@ -39,7 +39,7 @@ jobs:
           git config --local user.email "$(git log --format=%ae | head -n 1)"
           mv cocoArtifact/install.sh index.html
           git status
-          if [ -z $(git status --porcelain)" ]; then
+          if [ -z "$(git status --porcelain)" ]; then
             echo "Acá funciona?"
           fi
           git add index.html
