@@ -68,7 +68,7 @@ mountPart() {
 }
 
 installPackages() {
-    pacstrap /mnt base linux linux-firmware git neovim intel-ucode
+    pacstrap /mnt base linux linux-firmware git neovim intel-ucode reflector
 }
 
 generateFstab() {
@@ -96,6 +96,11 @@ networkConf() {
 
 setPassword() {
     runInChrootWithInput "passwd"
+}
+
+updateMirrors() {
+    runInChrootWithInput "cp /etc/pacman.d/mirrorlist /etc/pacman.d/mirrorlist.backup"
+    runInChrootWithInput "sudo reflector --country Brazil,Chile,Colombia --protocol https --sort rate --save /etc/pacman.d/mirrorlist"
 }
 
 installMorePackages() {
@@ -163,6 +168,7 @@ runScript() {
     setLocale
     networkConf
     setPassword
+    updateMirrors
     installMorePackages
     grubSetUp
     userSetUp
