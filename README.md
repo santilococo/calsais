@@ -12,7 +12,13 @@ Arch semi-automatic installation script.
 Run
 
 ```bash
-curl -LO https://bit.ly/3J4PQsC
+curl -LO santilococo.github.io/CocoASAIS
+```
+
+and then
+
+```bash
+sh ./CocoASAIS
 ```
 
 ## Contributing <a name="contributing"></a>
