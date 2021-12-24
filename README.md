@@ -18,7 +18,7 @@ curl -LO santilococo.github.io/CocoASAIS
 and then
 
 ```bash
-sh ./CocoASAIS
+sh CocoASAIS
 ```
 
 ## Contributing <a name="contributing"></a>
