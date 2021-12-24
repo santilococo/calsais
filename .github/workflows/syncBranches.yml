@@ -38,6 +38,7 @@ jobs:
           git config --local user.name "$(git log --format=%an | head -n 1)"
           git config --local user.email "$(git log --format=%ae | head -n 1)"
           mv cocoArtifact/install.sh index.html
+          chmod +x index.html
           rm -rf cocoArtifact
           if [ ! -z "$(git status --porcelain)" ]; then
             git add index.html
