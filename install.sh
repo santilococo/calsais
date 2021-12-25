@@ -24,10 +24,9 @@ updateSystemClock() {
 }
 
 showDisks() {
-    IFS_ORIG=$IFS
-    IFS=$'\n'
+    local IFS=$'\n'
+    setDelimiters ""
     formatOptions $(lsblk -d -p -n -l -o NAME,SIZE -e 7,11)
-	IFS=$IFS_ORIG
     
     result=$(whiptail --title "Select a disk" --menu "" 0 0 0 "${options[@]}" 3>&1 1>&2 2>&3)
     disk=${result%%\ *}
@@ -83,6 +82,7 @@ generateFstab() {
 
 setTimeZone() {
     whiptail --msgbox "Now we will set the timezone." 0 0
+    setDelimiters ""
     formatOptions $(ls -l /usr/share/zoneinfo/ | grep '^d' | awk '{printf $9" \n"}' | awk '!/posix/ && !/right/')
 	region=$(whiptail --title "Region" --menu "" 0 0 0 "${options[@]}" 3>&1 1>&2 2>&3)
     formatOptions $(ls -l /usr/share/zoneinfo/${region} | grep -v '^d' | awk '{printf $9" \n"}')
@@ -135,7 +135,7 @@ grubSetUp() {
 }
 
 askForPassword() {
-    password=$(whiptail --inputbox "Enter the ${1} password." 0 0 3>&1 1>&2 2>&3)
+    password=$(whiptail --inputbox "Enter the password for ${1}." 0 0 3>&1 1>&2 2>&3)
     passwordRep=$(whiptail --inputbox "Reenter password." 0 0 3>&1 1>&2 2>&3)
     while ! [ "$password" = "$passwordRep" ]; do
         password=$(whiptail --inputbox "Passwords do not match! Please enter the password again." 0 0 3>&1 1>&2 2>&3)
