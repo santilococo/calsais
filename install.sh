@@ -78,12 +78,13 @@ generateFstab() {
 }
 
 setTimeZone() {
+    whiptail --msgbox "Now we will set the timezone." 0 0
     formatOptions $(ls -l /usr/share/zoneinfo/ | grep '^d' | awk '{printf $9" \n"}' | awk '!/posix/ && !/right/')
-	timezoneGeneral=$(whiptail --title "Timezone" --menu "" 0 0 0 "${options[@]}" 3>&1 1>&2 2>&3)
-    formatOptions $(ls -l /usr/share/zoneinfo/${timezoneGeneral} | grep -v '^d' | awk '{printf $9" \n"}')
-	timezoneSpecific=$(whiptail --title "Timezone" --menu "" 0 0 0 "${options[@]}" 3>&1 1>&2 2>&3)
+	region=$(whiptail --title "Region" --menu "" 0 0 0 "${options[@]}" 3>&1 1>&2 2>&3)
+    formatOptions $(ls -l /usr/share/zoneinfo/${region} | grep -v '^d' | awk '{printf $9" \n"}')
+	city=$(whiptail --title "City" --menu "" 0 0 0 "${options[@]}" 3>&1 1>&2 2>&3)
 
-    ln -sf /usr/share/zoneinfo/${timezoneGeneral}/${timezoneSpecific} /etc/localtime
+    ln -sf /usr/share/zoneinfo/${region}/${city} /etc/localtime
     runInChroot "hwclock --systohc"
 }
 
@@ -164,8 +165,7 @@ installLastPrograms() {
     sudo pacman -S zsh
     sh -c "$(curl -fsSL https://raw.github.com/ohmyzsh/ohmyzsh/master/tools/install.sh)"
     git clone https://github.com/romkatv/powerlevel10k.git $ZSH_CUSTOM/themes/powerlevel10k
-    git clone https://aur.archlinux.org/paru.git
-    cd paru; makepkg -si --noconfirm; cd ..; rm -rf paru
+    git clone https://aur.archlinux.org/paru.git; cd paru; makepkg -si --noconfirm; cd ..; rm -rf paru
 }
 
 getDotfiles() {
