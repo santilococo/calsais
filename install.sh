@@ -94,7 +94,7 @@ setLocale() {
 }
 
 networkConf() {
-    hostname=$(dialog --inputbox "Enter the hostname." 0 0 3>&1 1>&2 2>&3 3>&1)
+    hostname=$(whiptail --inputbox "Enter the hostname." 0 0 3>&1 1>&2 2>&3)
     echo "${hostname}" > /etc/hostname
     echo "
 127.0.0.1   localhost
@@ -104,7 +104,7 @@ networkConf() {
 }
 
 setPassword() {
-    password=$(dialog --inputbox "Enter the root password." 0 0 3>&1 1>&2 2>&3 3>&1)
+    password=$(whiptail --inputbox "Enter the root password." 0 0 3>&1 1>&2 2>&3)
     runInChroot "echo "root:${password}" | chpasswd"
     unset password
 }
@@ -124,17 +124,17 @@ grubSetUp() {
 }
 
 askForPassword() {
-    password=$(whiptail --inputbox "Enter the password." 0 0 3>&1 1>&2 2>&3 3>&1)
-    passwordRe=$(whiptail --inputbox "Reenter password." 0 0 3>&1 1>&2 2>&3 3>&1)
+    password=$(whiptail --inputbox "Enter the password." 0 0 3>&1 1>&2 2>&3)
+    passwordRe=$(whiptail --inputbox "Reenter password." 0 0 3>&1 1>&2 2>&3)
     while ! [ "$password" = "$passwordRe" ]; do
-        password=$(whiptail --inputbox "Passwords do not match! Please enter the password again." 0 0 3>&1 1>&2 2>&3 3>&1)
-        passwordRe=$(whiptail --inputbox "Reenter password." 0 0 3>&1 1>&2 2>&3 3>&1)
+        password=$(whiptail --inputbox "Passwords do not match! Please enter the password again." 0 0 3>&1 1>&2 2>&3)
+        passwordRe=$(whiptail --inputbox "Reenter password." 0 0 3>&1 1>&2 2>&3)
     done
     unset passwordRe
 }
 
 userSetUp() {
-    username=$(whiptail --inputbox "Enter the new username." 0 0 3>&1 1>&2 2>&3 3>&1)
+    username=$(whiptail --inputbox "Enter the new username." 0 0 3>&1 1>&2 2>&3)
     askForPassword
     runInChroot "useradd -m ${username};echo "${username}:${password}" | chpasswd; sed -i 's/# %wheel ALL=(ALL) ALL/%wheel ALL=(ALL) ALL/' /etc/sudoers; usermod -aG wheel ${username}"
     unset username
