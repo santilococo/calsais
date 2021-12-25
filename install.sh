@@ -94,7 +94,7 @@ setLocale() {
 }
 
 networkConf() {
-    hostname=$(dialog --inputbox "Enter the hostname." 10 60 3>&1 1>&2 2>&3 3>&1)
+    hostname=$(dialog --inputbox "Enter the hostname." 0 0 3>&1 1>&2 2>&3 3>&1)
     echo "${hostname}" > /etc/hostname
     echo "
 127.0.0.1   localhost
@@ -104,7 +104,9 @@ networkConf() {
 }
 
 setPassword() {
-    runInChrootWithInput "passwd"
+    password=$(dialog --inputbox "Enter the root password." 0 0 3>&1 1>&2 2>&3 3>&1)
+    runInChrootWithInput "echo "root:${password}" | chpasswd"
+    unset password
 }
 
 updateMirrors() {
@@ -122,7 +124,11 @@ grubSetUp() {
 }
 
 userSetUp() {
-    runInChrootWithInput "useradd -m slococo;passwd slococo; sed -i 's/# %wheel ALL=(ALL) ALL/%wheel ALL=(ALL) ALL/' /etc/sudoers; usermod -aG wheel slococo"
+    username=$(dialog --inputbox "Enter the new username." 0 0 3>&1 1>&2 2>&3 3>&1)
+    password=$(dialog --inputbox "Enter the password." 0 0 3>&1 1>&2 2>&3 3>&1)
+    runInChrootWithInput "useradd -m ${username};echo "${username}:${password}" | chpasswd; sed -i 's/# %wheel ALL=(ALL) ALL/%wheel ALL=(ALL) ALL/' /etc/sudoers; usermod -aG wheel ${username}"
+    unset username
+    unset password
 }
 
 runInChroot() {
@@ -153,7 +159,7 @@ installLastPrograms() {
     sh -c "$(curl -fsSL https://raw.github.com/ohmyzsh/ohmyzsh/master/tools/install.sh)"
     git clone https://github.com/romkatv/powerlevel10k.git $ZSH_CUSTOM/themes/powerlevel10k
     git clone https://aur.archlinux.org/paru.git
-    cd paru; makepkg -si --noconfirm; cd ..
+    cd paru; makepkg -si --noconfirm; cd ..; rm -rf paru
 }
 
 getDotfiles() {
