@@ -1,5 +1,12 @@
 #!/bin/sh
 
+formatOptions() {
+    options=()
+    for item in $@; do  
+        options+=("${item}" "")
+    done
+}
+
 checkUefi() {
     ls /sys/firmware/efi/efivars > /dev/null 2>&1
     if [ $? -ge 1 ]; then
@@ -13,14 +20,9 @@ updateSystemClock() {
 }
 
 showDisks() {
-    items=$(lsblk -d -p -n -l -o NAME,SIZE -e 7,11)
-    options=()
-
     IFS_ORIG=$IFS
     IFS=$'\n'
-    for item in ${items}; do  
-        options+=("${item}" "")
-    done
+    formatOptions $(lsblk -d -p -n -l -o NAME,SIZE -e 7,11)
 	IFS=$IFS_ORIG
     
     result=$(whiptail --title "Select a disk" --menu "" 0 0 0 "${options[@]}" 3>&1 1>&2 2>&3)
@@ -30,7 +32,7 @@ showDisks() {
 partDisks() {
     showDisks
 
-    result=$(whiptail --yesno "Do you want me to automatically partition and format the disk for you?" 0 0 3>&1 1>&2 2>&3)
+    whiptail --yesno "Do you want me to automatically partition and format the disk for you?" 0 0
     if [ $? -eq 1 ]; then
         gdisk $disk
         # TODO: ask user for the partitions and do formatPart and mountPart.
@@ -76,7 +78,12 @@ generateFstab() {
 }
 
 setTimeZone() {
-    ln -sf /usr/share/zoneinfo/America/Buenos_Aires /etc/localtime
+    formatOptions $(ls -l /usr/share/zoneinfo/ | grep '^d' | awk '{printf $9" \n"}' | awk '!/posix/ && !/right/')
+	timezoneGeneral=$(whiptail --title "Timezone" --menu "" 0 0 0 "${options[@]}" 3>&1 1>&2 2>&3)
+    formatOptions $(ls -l /usr/share/zoneinfo/${timezoneGeneral} | grep -v '^d' | awk '{printf $9" \n"}')
+	timezoneSpecific=$(whiptail --title "Timezone" --menu "" 0 0 0 "${options[@]}" 3>&1 1>&2 2>&3)
+
+    ln -sf /usr/share/zoneinfo/${timezoneGeneral}/${timezoneSpecific} /etc/localtime
     runInChrootWithInput "hwclock --systohc"
 }
 
@@ -93,6 +100,7 @@ networkConf() {
 127.0.0.1   localhost
 ::1     localhost
 127.0.1.1   ${hostname}.localdomain ${hostname}" >> /etc/hosts
+    unset hostname
 }
 
 setPassword() {
@@ -132,15 +140,20 @@ EOF
 
 finishInstallation() {
     umount -R /mnt
-    reboot
+    whiptail --yesno "Finally, the PC needs to restart, would you like to do it?" 0 0
+    if [ $? -eq 0 ]; then
+        reboot
+    fi
 }
 
 installLastPrograms() {
-    sudo pacman -S xorg xorg-xinit
+    sudo pacman -S --noconfirm xorg-xinit
     # TODO: Use csv to install all the programs
     sudo pacman -S zsh
     sh -c "$(curl -fsSL https://raw.github.com/ohmyzsh/ohmyzsh/master/tools/install.sh)"
     git clone https://github.com/romkatv/powerlevel10k.git $ZSH_CUSTOM/themes/powerlevel10k
+    git clone https://aur.archlinux.org/paru.git
+    cd paru; makepkg -si --noconfirm; cd ..
 }
 
 getDotfiles() {
@@ -176,4 +189,5 @@ runScript() {
     finishInstallation
 }
 
-runScript
+# runScript
+setTimeZone
