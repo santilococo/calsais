@@ -115,7 +115,7 @@ updateMirrors() {
 }
 
 installMorePackages() {
-    runInChroot "pacman -Sy --noconfirm grub efibootmgr networkmanager dialog reflector base-devel linux-headers xdg-user-dirs xdg-utils alsa-utils pipewire pipewire-alsa pipewire-pulse openssh reflector qemu ttf-fira-code sudo nvidia-utils nvidia-settings xorg libimobiledevice"
+    runInChroot "pacman -Sy --noconfirm grub efibootmgr networkmanager reflector base-devel linux-headers xdg-user-dirs xdg-utils alsa-utils pipewire pipewire-alsa pipewire-pulse reflector sudo nvidia-utils nvidia-settings"
     runInChroot "systemctl enable NetworkManager; systemctl enable fstrim.timer"
 }
 
@@ -123,9 +123,19 @@ grubSetUp() {
     runInChroot "grub-install --target=x86_64-efi --efi-directory=/boot/efi --bootloader-id=GRUB; grub-mkconfig -o /boot/grub/grub.cfg"
 }
 
+askForPassword() {
+    password=$(whiptail --inputbox "Enter the password." 0 0 3>&1 1>&2 2>&3 3>&1)
+    passwordRe=$(whiptail --inputbox "Reenter password." 0 0 3>&1 1>&2 2>&3 3>&1)
+    while ! [ "$password" = "$passwordRe" ]; do
+        password=$(whiptail --inputbox "Passwords do not match! Please enter the password again." 0 0 3>&1 1>&2 2>&3 3>&1)
+        passwordRe=$(whiptail --inputbox "Reenter password." 0 0 3>&1 1>&2 2>&3 3>&1)
+    done
+    unset passwordRe
+}
+
 userSetUp() {
-    username=$(dialog --inputbox "Enter the new username." 0 0 3>&1 1>&2 2>&3 3>&1)
-    password=$(dialog --inputbox "Enter the password." 0 0 3>&1 1>&2 2>&3 3>&1)
+    username=$(whiptail --inputbox "Enter the new username." 0 0 3>&1 1>&2 2>&3 3>&1)
+    askForPassword
     runInChroot "useradd -m ${username};echo "${username}:${password}" | chpasswd; sed -i 's/# %wheel ALL=(ALL) ALL/%wheel ALL=(ALL) ALL/' /etc/sudoers; usermod -aG wheel ${username}"
     unset username
     unset password
@@ -149,7 +159,7 @@ finishInstallation() {
 }
 
 installLastPrograms() {
-    sudo pacman -S --noconfirm xorg-xinit
+    sudo pacman -S --noconfirm xorg xorg-xinit ttf-fira-code dialog
     # TODO: Use csv to install all the programs
     sudo pacman -S zsh
     sh -c "$(curl -fsSL https://raw.github.com/ohmyzsh/ohmyzsh/master/tools/install.sh)"
