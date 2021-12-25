@@ -84,12 +84,12 @@ setTimeZone() {
 	timezoneSpecific=$(whiptail --title "Timezone" --menu "" 0 0 0 "${options[@]}" 3>&1 1>&2 2>&3)
 
     ln -sf /usr/share/zoneinfo/${timezoneGeneral}/${timezoneSpecific} /etc/localtime
-    runInChrootWithInput "hwclock --systohc"
+    runInChroot "hwclock --systohc"
 }
 
 setLocale() {
     sed 's/#en_US.UTF-8 UTF-8/en_US.UTF-8 UTF-8/' -i /etc/locale.gen
-    runInChrootWithInput "locale-gen"
+    runInChroot "locale-gen"
     echo "LANG=en_US.UTF-8" > /etc/locale.conf
 }
 
@@ -105,37 +105,33 @@ networkConf() {
 
 setPassword() {
     password=$(dialog --inputbox "Enter the root password." 0 0 3>&1 1>&2 2>&3 3>&1)
-    runInChrootWithInput "echo "root:${password}" | chpasswd"
+    runInChroot "echo "root:${password}" | chpasswd"
     unset password
 }
 
 updateMirrors() {
-    runInChrootWithInput "cp /etc/pacman.d/mirrorlist /etc/pacman.d/mirrorlist.backup"
-    runInChrootWithInput "sudo reflector --country Brazil,Chile,Colombia --protocol https --sort rate --save /etc/pacman.d/mirrorlist"
+    runInChroot "cp /etc/pacman.d/mirrorlist /etc/pacman.d/mirrorlist.backup"
+    runInChroot "sudo reflector --country Brazil,Chile,Colombia --protocol https --sort rate --save /etc/pacman.d/mirrorlist"
 }
 
 installMorePackages() {
-    runInChrootWithInput "pacman -Sy --noconfirm grub efibootmgr networkmanager dialog reflector base-devel linux-headers xdg-user-dirs xdg-utils alsa-utils pipewire pipewire-alsa pipewire-pulse openssh reflector qemu ttf-fira-code sudo nvidia-utils nvidia-settings xorg libimobiledevice"
-    runInChrootWithInput "systemctl enable NetworkManager; systemctl enable fstrim.timer"
+    runInChroot "pacman -Sy --noconfirm grub efibootmgr networkmanager dialog reflector base-devel linux-headers xdg-user-dirs xdg-utils alsa-utils pipewire pipewire-alsa pipewire-pulse openssh reflector qemu ttf-fira-code sudo nvidia-utils nvidia-settings xorg libimobiledevice"
+    runInChroot "systemctl enable NetworkManager; systemctl enable fstrim.timer"
 }
 
 grubSetUp() {
-    runInChrootWithInput "grub-install --target=x86_64-efi --efi-directory=/boot/efi --bootloader-id=GRUB; grub-mkconfig -o /boot/grub/grub.cfg"
+    runInChroot "grub-install --target=x86_64-efi --efi-directory=/boot/efi --bootloader-id=GRUB; grub-mkconfig -o /boot/grub/grub.cfg"
 }
 
 userSetUp() {
     username=$(dialog --inputbox "Enter the new username." 0 0 3>&1 1>&2 2>&3 3>&1)
     password=$(dialog --inputbox "Enter the password." 0 0 3>&1 1>&2 2>&3 3>&1)
-    runInChrootWithInput "useradd -m ${username};echo "${username}:${password}" | chpasswd; sed -i 's/# %wheel ALL=(ALL) ALL/%wheel ALL=(ALL) ALL/' /etc/sudoers; usermod -aG wheel ${username}"
+    runInChroot "useradd -m ${username};echo "${username}:${password}" | chpasswd; sed -i 's/# %wheel ALL=(ALL) ALL/%wheel ALL=(ALL) ALL/' /etc/sudoers; usermod -aG wheel ${username}"
     unset username
     unset password
 }
 
 runInChroot() {
-    arch-chroot /mnt bash -c '${1}'
-}
-
-runInChrootWithInput() {
     cat << EOF > /mnt/runme
 ${1}
 EOF
