@@ -1,9 +1,13 @@
 #!/bin/sh
 
+setDelimiters() {
+    delimiters=("$@")
+}
+
 formatOptions() {
     options=()
-    for item in $@; do  
-        options+=("${item}" "")
+    for item in "$@"; do
+        options+=("${item}" "${delimiters[@]}")
     done
 }
 
@@ -89,6 +93,7 @@ setTimeZone() {
 }
 
 setLocale() {
+    # TODO: Let the user choose a locale
     sed 's/#en_US.UTF-8 UTF-8/en_US.UTF-8 UTF-8/' -i /etc/locale.gen
     runInChroot "locale-gen"
     echo "LANG=en_US.UTF-8" > /etc/locale.conf
@@ -105,14 +110,19 @@ networkConf() {
 }
 
 setPassword() {
-    password=$(whiptail --inputbox "Enter the root password." 0 0 3>&1 1>&2 2>&3)
+    askForPassword "root"
     runInChroot "echo "root:${password}" | chpasswd"
     unset password
 }
 
 updateMirrors() {
     runInChroot "cp /etc/pacman.d/mirrorlist /etc/pacman.d/mirrorlist.backup"
-    runInChroot "sudo reflector --country Brazil,Chile,Colombia --protocol https --sort rate --save /etc/pacman.d/mirrorlist"
+    local IFS=$'\n'
+    setDelimiters "" "OFF"
+    formatOptions $(cat /etc/pacman.d/mirrorlist.pacnew | grep '^##' | cut -d' ' -f2- | sed -n '5~1p')
+    countries=$(whiptail --title "Countries" --checklist "" 0 0 0 "${options[@]}" 3>&1 1>&2 2>&3)
+    countriesFmt=$(echo "$countries" | sed -r 's/" "/,/g')
+    runInChroot "sudo reflector --country "${countriesFmt//\"/}" --protocol https --sort rate --save /etc/pacman.d/mirrorlist"
 }
 
 installMorePackages() {
@@ -125,18 +135,18 @@ grubSetUp() {
 }
 
 askForPassword() {
-    password=$(whiptail --inputbox "Enter the password." 0 0 3>&1 1>&2 2>&3)
-    passwordRe=$(whiptail --inputbox "Reenter password." 0 0 3>&1 1>&2 2>&3)
-    while ! [ "$password" = "$passwordRe" ]; do
+    password=$(whiptail --inputbox "Enter the ${1} password." 0 0 3>&1 1>&2 2>&3)
+    passwordRep=$(whiptail --inputbox "Reenter password." 0 0 3>&1 1>&2 2>&3)
+    while ! [ "$password" = "$passwordRep" ]; do
         password=$(whiptail --inputbox "Passwords do not match! Please enter the password again." 0 0 3>&1 1>&2 2>&3)
-        passwordRe=$(whiptail --inputbox "Reenter password." 0 0 3>&1 1>&2 2>&3)
+        passwordRep=$(whiptail --inputbox "Reenter password." 0 0 3>&1 1>&2 2>&3)
     done
-    unset passwordRe
+    unset passwordRep
 }
 
 userSetUp() {
     username=$(whiptail --inputbox "Enter the new username." 0 0 3>&1 1>&2 2>&3)
-    askForPassword
+    askForPassword "${username}"
     runInChroot "useradd -m ${username};echo "${username}:${password}" | chpasswd; sed -i 's/# %wheel ALL=(ALL) ALL/%wheel ALL=(ALL) ALL/' /etc/sudoers; usermod -aG wheel ${username}"
     unset username
     unset password
@@ -201,4 +211,4 @@ runScript() {
     finishInstallation
 }
 
-runScript
+# runScript
