@@ -189,5 +189,4 @@ runScript() {
     finishInstallation
 }
 
-# runScript
-setTimeZone
+runScript
