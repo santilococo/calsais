@@ -29,7 +29,8 @@ showDisks() {
     formatOptions $(lsblk -d -p -n -l -o NAME,SIZE -e 7,11)
     
     result=$(whiptail --title "Select a disk" --menu "" 0 0 0 "${options[@]}" 3>&1 1>&2 2>&3)
-    disk=${result%%\ *}
+    disk=$(echo $result | cut -d' ' -f1)
+    echo $disk
 }
 
 partDisks() {
@@ -217,4 +218,4 @@ runScript() {
     finishInstallation
 }
 
-# runScript
+runScript
