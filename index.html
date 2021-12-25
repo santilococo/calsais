@@ -104,7 +104,7 @@ updateMirrors() {
 }
 
 installMorePackages() {
-    runInChrootWithInput "pacman -Sy --noconfirm grub efibootmgr networkmanager network-manager-applet dialog reflector base-devel linux-headers xdg-user-dirs xdg-utils alsa-utils pipewire pipewire-alsa pipewire-pulse openssh reflector qemu qemu-arch-extra ttf-fira-code sudo nvidia-utils nvidia-settings xorg"
+    runInChrootWithInput "pacman -Sy --noconfirm grub efibootmgr networkmanager dialog reflector base-devel linux-headers xdg-user-dirs xdg-utils alsa-utils pipewire pipewire-alsa pipewire-pulse openssh reflector qemu ttf-fira-code sudo nvidia-utils nvidia-settings xorg libimobiledevice"
     runInChrootWithInput "systemctl enable NetworkManager; systemctl enable fstrim.timer"
 }
 
