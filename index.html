@@ -119,14 +119,20 @@ updateMirrors() {
     runInChroot "cp /etc/pacman.d/mirrorlist /etc/pacman.d/mirrorlist.backup"
     local IFS=$'\n'
     setDelimiters "" "OFF"
-    formatOptions $(cat /etc/pacman.d/mirrorlist.pacnew | grep '^##' | cut -d' ' -f2- | sed -n '5~1p')
+    formatOptions $(cat /mnt/etc/pacman.d/mirrorlist | grep '^##' | cut -d' ' -f2- | sed -n '5~1p')
     countries=$(whiptail --title "Countries" --checklist "" 0 0 0 "${options[@]}" 3>&1 1>&2 2>&3)
     countriesFmt=$(echo "$countries" | sed -r 's/" "/,/g')
     runInChroot "sudo reflector --country "${countriesFmt//\"/}" --protocol https --sort rate --save /etc/pacman.d/mirrorlist"
 }
 
+installPackage() {
+    whiptail --infobox "Installing \`$1\` from the arch official repositories." 0 0
+    pacstrap /mnt ${1}
+}
+
 installMorePackages() {
-    runInChroot "pacman -Sy --noconfirm grub efibootmgr networkmanager reflector base-devel linux-headers xdg-user-dirs xdg-utils alsa-utils pipewire pipewire-alsa pipewire-pulse reflector sudo nvidia-utils nvidia-settings"
+    # runInChroot "pacman -Sy --noconfirm grub efibootmgr networkmanager base-devel linux-headers xdg-user-dirs xdg-utils alsa-utils pipewire pipewire-alsa pipewire-pulse sudo nvidia-utils nvidia-settings"
+    pacstrap /mnt grub efibootmgr networkmanager base-devel linux-headers xdg-user-dirs xdg-utils alsa-utils pipewire pipewire-alsa pipewire-pulse sudo nvidia-utils nvidia-settings
     runInChroot "systemctl enable NetworkManager; systemctl enable fstrim.timer"
 }
 
@@ -153,12 +159,12 @@ userSetUp() {
 }
 
 runInChroot() {
-    cat << EOF > /mnt/runme
+    cat << EOF > /mnt/cocoScript
 ${1}
 EOF
-    chmod 755 /mnt/runme
-    arch-chroot /mnt /runme
-    rm /mnt/runme
+    chmod 755 /mnt/cocoScript
+    arch-chroot /mnt /cocoScript
+    rm /mnt/cocoScript
 }
 
 finishInstallation() {
@@ -170,7 +176,7 @@ finishInstallation() {
 }
 
 installLastPrograms() {
-    sudo pacman -S --noconfirm xorg xorg-xinit ttf-fira-code dialog
+    sudo pacman -Sy --noconfirm xorg xorg-xinit ttf-fira-code dialog
     # TODO: Use csv to install all the programs
     sudo pacman -S zsh
     sh -c "$(curl -fsSL https://raw.github.com/ohmyzsh/ohmyzsh/master/tools/install.sh)"
