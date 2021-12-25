@@ -87,11 +87,12 @@ setLocale() {
 }
 
 networkConf() {
-    echo "archLinux" > /etc/hostname
+    hostname=$(dialog --inputbox "Enter the hostname." 10 60 3>&1 1>&2 2>&3 3>&1)
+    echo "${hostname}" > /etc/hostname
     echo "
 127.0.0.1   localhost
 ::1     localhost
-127.0.1.1   archLinux.localdomain archLinux" >> /etc/hosts
+127.0.1.1   ${hostname}.localdomain ${hostname}" >> /etc/hosts
 }
 
 setPassword() {
