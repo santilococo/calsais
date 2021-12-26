@@ -98,15 +98,15 @@ mountPart() {
 }
 
 getThePackages() {
-    if [ ! -f "programs.csv" ]; then
-        curl -LO "https://raw.githubusercontent.com/santilococo/CocoASAIS/master/cocoPrograms.csv"
+    if [ ! -f "packages.csv" ]; then
+        curl -LO "https://raw.githubusercontent.com/santilococo/CocoASAIS/master/packages.csv"
     fi
     local IFS=,
     while read -r NAME IMPORTANT; do
         if [ "$IMPORTANT" = "${1}" ]; then
             installPackage "$NAME"
         fi
-	done < cocoPrograms.csv
+	done < packages.csv
 }
 
 installImportantPackages() {
