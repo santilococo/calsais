@@ -78,9 +78,9 @@ partDisks() {
 autoPart() {
     parted -s $disk mklabel gpt 2> /dev/null
 
-	sgdisk $disk -n=1:0:+300M -t=1:ef00 > /dev/null
-	sgdisk $disk -n=2:0:+1024M -t=2:8200 > /dev/null
-	sgdisk $disk -n=3:0:0 > /dev/null
+    sgdisk $disk -n=1:0:+300M -t=1:ef00 > /dev/null
+    sgdisk $disk -n=2:0:+1024M -t=2:8200 > /dev/null
+    sgdisk $disk -n=3:0:0 > /dev/null
 }
 
 formatPart() {
@@ -122,10 +122,10 @@ setTimeZone() {
     whiptail --msgbox "Now we will set the timezone." 0 0
     setDelimiters ""
     formatOptions $(ls -l /usr/share/zoneinfo/ | grep '^d' | awk '{printf $9" \n"}' | awk '!/posix/ && !/right/')
-	region=$(whiptail --title "Region" --menu "" 0 0 0 "${options[@]}" 3>&1 1>&2 2>&3)
+    region=$(whiptail --title "Region" --menu "" 0 0 0 "${options[@]}" 3>&1 1>&2 2>&3)
     exitIfCancel "You must select a region." "setTimeZone"
     formatOptions $(ls -l /usr/share/zoneinfo/${region} | grep -v '^d' | awk '{printf $9" \n"}')
-	city=$(whiptail --title "City" --menu "" 0 0 0 "${options[@]}" 3>&1 1>&2 2>&3)
+    city=$(whiptail --title "City" --menu "" 0 0 0 "${options[@]}" 3>&1 1>&2 2>&3)
     exitIfCancel "You must select a city." "setTimeZone"
 
     ln -sf /usr/share/zoneinfo/${region}/${city} /etc/localtime
