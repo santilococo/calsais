@@ -92,12 +92,26 @@ formatPart() {
 mountPart() {
     mount "$rootPart" /mnt > /dev/null
     mkdir -p /mnt/boot/efi 
+    # TODO: Ask where to mount the bootPart
     mount "$bootPart" /mnt/boot/efi > /dev/null
     swapon "$swapPart" > /dev/null
 }
 
-installPackages() {
-    pacstrap /mnt base linux linux-firmware git neovim intel-ucode reflector
+getThePackages() {
+    if [ ! -f "programs.csv" ]; then
+        curl -LO "https://raw.githubusercontent.com/santilococo/CocoASAIS/master/cocoPrograms.csv"
+    fi
+    local IFS=,
+    while read -r NAME IMPORTANT; do
+        if [ "$IMPORTANT" = "${1}" ]; then
+            installPackage "$NAME"
+        fi
+	done < cocoPrograms.csv
+}
+
+installImportantPackages() {
+    getThePackages "Y"
+    runInChroot "systemctl enable NetworkManager; systemctl enable fstrim.timer"
 }
 
 generateFstab() {
@@ -168,16 +182,12 @@ updateMirrors() {
 }
 
 installPackage() {
-    whiptail --infobox "Installing \`$1\` from the official arch repositories." 0 0
+    whiptail --infobox "Installing '$1'." 0 0
     pacstrap /mnt ${1}
 }
 
-installMorePackages() {
-    pacstrap /mnt grub efibootmgr networkmanager base-devel linux-headers xdg-user-dirs xdg-utils alsa-utils pipewire pipewire-alsa pipewire-pulse sudo nvidia-utils nvidia-settings
-    runInChroot "systemctl enable NetworkManager; systemctl enable fstrim.timer"
-}
-
 grubSetUp() {
+    # TODO: Prompt user for efi-directory
     runInChroot "grub-install --target=x86_64-efi --efi-directory=/boot/efi --bootloader-id=GRUB; grub-mkconfig -o /boot/grub/grub.cfg"
 }
 
@@ -208,8 +218,8 @@ finishInstallation() {
 }
 
 installLastPrograms() {
-    sudo pacman -Sy --noconfirm xorg xorg-xinit ttf-fira-code dialog
-    # TODO: Use csv to install all the programs
+    sudo pacman -Sy
+    getThePackages "N"
     sudo pacman -S zsh
     sh -c "$(curl -fsSL https://raw.github.com/ohmyzsh/ohmyzsh/master/tools/install.sh)"
     git clone https://github.com/romkatv/powerlevel10k.git $ZSH_CUSTOM/themes/powerlevel10k
@@ -230,14 +240,13 @@ steps=(
     checkUefi
     updateSystemClock
     partDisks
-    installPackages
+    installImportantPackages
     generateFstab
     setTimeZone
     setLocale
     networkConf
     setRootPassword
     updateMirrors
-    installMorePackages
     grubSetUp
     userSetUp
     finishInstallation
@@ -272,4 +281,6 @@ runScript() {
     done
 }
 
-runScript
+# runScript
+# installPackages
+    getThePackages "N"
