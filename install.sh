@@ -30,7 +30,7 @@ updateSystemClock() {
 
 exitIfCancel() {
     if [ $? -eq 1 ]; then
-        whiptail --msgbox "${1}" 0 0
+        whiptail --msgbox "${1}. Therefore, the installation process will stop, but you can continue where you left off by running:\n\nsh CocoASIAS" 0 0
         echo "${2}" > CocoASAIS.log
         exit 1
     fi
@@ -109,8 +109,10 @@ setTimeZone() {
     setDelimiters ""
     formatOptions $(ls -l /usr/share/zoneinfo/ | grep '^d' | awk '{printf $9" \n"}' | awk '!/posix/ && !/right/')
 	region=$(whiptail --title "Region" --menu "" 0 0 0 "${options[@]}" 3>&1 1>&2 2>&3)
+    exitIfCancel "You must select a region." "setTimeZone"
     formatOptions $(ls -l /usr/share/zoneinfo/${region} | grep -v '^d' | awk '{printf $9" \n"}')
 	city=$(whiptail --title "City" --menu "" 0 0 0 "${options[@]}" 3>&1 1>&2 2>&3)
+    exitIfCancel "You must select a city." "setTimeZone"
 
     ln -sf /usr/share/zoneinfo/${region}/${city} /etc/localtime
     runInChroot "hwclock --systohc"
@@ -125,6 +127,7 @@ setLocale() {
 
 networkConf() {
     hostname=$(whiptail --inputbox "Enter the hostname." 0 0 3>&1 1>&2 2>&3)
+    exitIfCancel "You must enter a hostname." "networkConf"
     echo "${hostname}" > /etc/hostname
     echo "
 127.0.0.1   localhost
@@ -133,8 +136,22 @@ networkConf() {
     unset hostname
 }
 
-setPassword() {
-    askForPassword "root"
+askForPassword() {
+    password=$(whiptail --inputbox "Enter the password for ${1}." 0 0 3>&1 1>&2 2>&3)
+    exitIfCancel "You must enter a password." "${2}"
+    passwordRep=$(whiptail --inputbox "Reenter password." 0 0 3>&1 1>&2 2>&3)
+    exitIfCancel "You must enter a password." "${2}"
+    while ! [ "$password" = "$passwordRep" ]; do
+        password=$(whiptail --inputbox "Passwords do not match! Please enter the password again." 0 0 3>&1 1>&2 2>&3)
+        exitIfCancel "You must enter a password." "${2}"
+        passwordRep=$(whiptail --inputbox "Reenter password." 0 0 3>&1 1>&2 2>&3)
+        exitIfCancel "You must enter a password." "${2}"
+    done
+    unset passwordRep
+}
+
+setRootPassword() {
+    askForPassword "root" "setRootPassword"
     runInChroot "echo "root:${password}" | chpasswd"
     unset password
 }
@@ -145,12 +162,13 @@ updateMirrors() {
     setDelimiters "" "OFF"
     formatOptions $(cat /mnt/etc/pacman.d/mirrorlist | grep '^##' | cut -d' ' -f2- | sed -n '5~1p')
     countries=$(whiptail --title "Countries" --checklist "" 0 0 0 "${options[@]}" 3>&1 1>&2 2>&3)
+    exitIfCancel "You must select at least one country." "updateMirrors"
     countriesFmt=$(echo "$countries" | sed -r 's/" "/,/g')
     runInChroot "sudo reflector --country "${countriesFmt//\"/}" --protocol https --sort rate --save /etc/pacman.d/mirrorlist"
 }
 
 installPackage() {
-    whiptail --infobox "Installing \`$1\` from the arch official repositories." 0 0
+    whiptail --infobox "Installing \`$1\` from the official arch repositories." 0 0
     pacstrap /mnt ${1}
 }
 
@@ -163,19 +181,10 @@ grubSetUp() {
     runInChroot "grub-install --target=x86_64-efi --efi-directory=/boot/efi --bootloader-id=GRUB; grub-mkconfig -o /boot/grub/grub.cfg"
 }
 
-askForPassword() {
-    password=$(whiptail --inputbox "Enter the password for ${1}." 0 0 3>&1 1>&2 2>&3)
-    passwordRep=$(whiptail --inputbox "Reenter password." 0 0 3>&1 1>&2 2>&3)
-    while ! [ "$password" = "$passwordRep" ]; do
-        password=$(whiptail --inputbox "Passwords do not match! Please enter the password again." 0 0 3>&1 1>&2 2>&3)
-        passwordRep=$(whiptail --inputbox "Reenter password." 0 0 3>&1 1>&2 2>&3)
-    done
-    unset passwordRep
-}
-
 userSetUp() {
     username=$(whiptail --inputbox "Enter the new username." 0 0 3>&1 1>&2 2>&3)
-    askForPassword "${username}"
+    exitIfCancel "You must enter an username." "userSetUp"
+    askForPassword "${username}" "userSetUp"
     runInChroot "useradd -m ${username};echo "${username}:${password}" | chpasswd; sed -i 's/# %wheel ALL=(ALL) ALL/%wheel ALL=(ALL) ALL/' /etc/sudoers; usermod -aG wheel ${username}"
     unset username
     unset password
@@ -226,7 +235,7 @@ steps=(
     setTimeZone
     setLocale
     networkConf
-    setPassword
+    setRootPassword
     updateMirrors
     installMorePackages
     grubSetUp
