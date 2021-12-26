@@ -11,10 +11,15 @@ formatOptions() {
     done
 }
 
+logStep() {
+    echo ${1} > CocoASAIS.log
+}
+
 checkUefi() {
     ls /sys/firmware/efi/efivars > /dev/null 2>&1
     if [ $? -ge 1 ]; then
         whiptail --msgbox "This scripts supports only UEFI boot mode." 0 0
+        logStep "checkUefi"
         exit 1
     fi
 }
@@ -23,30 +28,48 @@ updateSystemClock() {
     timedatectl set-ntp true
 }
 
-showDisks() {
-    local IFS=$'\n'
-    setDelimiters ""
-    formatOptions $(lsblk -d -p -n -l -o NAME,SIZE -e 7,11)
-    
-    result=$(whiptail --title "Select a disk" --menu "" 0 0 0 "${options[@]}" 3>&1 1>&2 2>&3)
-    disk=$(echo $result | cut -d' ' -f1)
-    echo $disk
+exitIfCancel() {
+    if [ $? -eq 1 ]; then
+        whiptail --msgbox "${1}" 0 0
+        echo "${2}" > CocoASAIS.log
+        exit 1
+    fi
 }
 
 partDisks() {
-    showDisks
+    local IFS=$'\n'
+    setDelimiters ""
+    formatOptions $(lsblk -dpnlo NAME,SIZE)
+    
+    result=$(whiptail --title "Select a disk." --menu "" 0 0 0 "${options[@]}" 3>&1 1>&2 2>&3)
+    exitIfCancel "You must select a disk." "partDisks"
+    disk=$(echo $result | cut -d' ' -f1)
 
+    # TODO: Add swapfile as an alternative to swap partition
     whiptail --yesno "Do you want me to automatically partition and format the disk for you?" 0 0
     if [ $? -eq 1 ]; then
+        whiptail --msgbox "You will partition the disk yourself with gdisk and then when finished you will continue with the installation." 0 0
         gdisk $disk
-        # TODO: ask user for the partitions and do formatPart and mountPart.
-        return
+        # TODO: Ask for home partition
+        formatOptions $(lsblk ${disk} -pnlo NAME,SIZE,MOUNTPOINTS | sed -n '2~1p')
+        result=$(whiptail --title "Select the boot partition." --menu "" 0 0 0 "${options[@]}" 3>&1 1>&2 2>&3)
+        exitIfCancel "You must select the boot partition." "partDisks"
+        bootPart=$(echo $result | cut -d' ' -f1)
+        result=$(whiptail --title "Select the root partition." --menu "" 0 0 0 "${options[@]}" 3>&1 1>&2 2>&3)
+        exitIfCancel "You must select the root partition." "partDisks"
+        rootPart=$(echo $result | cut -d' ' -f1)
+        whiptail --yesno "Do you have a swap partition?" 0 0
+        if [ $? -eq 1 ]; then
+            result=$(whiptail --title "Select the swap partition." --menu "" 0 0 0 "${options[@]}" 3>&1 1>&2 2>&3)
+            exitIfCancel "You must select the swap partition." "partDisks"
+            swapPart=$(echo $result | cut -d' ' -f1)
+        fi
+    else
+        autoPart
+        bootPart=${disk}1
+        swapPart=${disk}2
+        rootPart=${disk}3
     fi
-
-    autoPart
-    bootPart=${disk}1
-    swapPart=${disk}2
-    rootPart=${disk}3
 
     formatPart
     mountPart
@@ -132,7 +155,6 @@ installPackage() {
 }
 
 installMorePackages() {
-    # runInChroot "pacman -Sy --noconfirm grub efibootmgr networkmanager base-devel linux-headers xdg-user-dirs xdg-utils alsa-utils pipewire pipewire-alsa pipewire-pulse sudo nvidia-utils nvidia-settings"
     pacstrap /mnt grub efibootmgr networkmanager base-devel linux-headers xdg-user-dirs xdg-utils alsa-utils pipewire pipewire-alsa pipewire-pulse sudo nvidia-utils nvidia-settings
     runInChroot "systemctl enable NetworkManager; systemctl enable fstrim.timer"
 }
@@ -195,13 +217,7 @@ getDotfiles() {
     cd $lastFolder
 }
 
-runScript() {
-    if [ -d "$HOME/Documents" ]; then
-        getDotfiles
-        exit 1
-    fi
-
-    whiptail --title "CocoASAIS" --msgbox "Welcome to CocoASAIS!" 0 0
+steps=(
     checkUefi
     updateSystemClock
     partDisks
@@ -216,6 +232,35 @@ runScript() {
     grubSetUp
     userSetUp
     finishInstallation
+)
+
+runScript() {
+    if [ -d "$HOME/Documents" ]; then
+        getDotfiles
+        exit 0
+    fi
+
+    i=0; found=false
+    if [ -f "CocoASAIS.log" ]; then
+        lastStep=$(cat CocoASAIS.log)
+        for item in "${steps[@]}"; do
+            if [ $item = "$lastStep" ]; then
+                found=true
+                break
+            fi
+            ((i++))
+        done
+        if [ $found = false ]; then
+            i=0
+        fi
+    fi
+
+    whiptail --title "CocoASAIS" --msgbox "Welcome to CocoASAIS!" 0 0
+
+    while [ $i -le "${#steps[@]}" ]; do
+        ${steps[$i]}
+        ((i++))
+    done
 }
 
 runScript
