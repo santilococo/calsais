@@ -214,6 +214,8 @@ finishInstallation() {
     whiptail --yesno "Finally, the PC needs to restart, would you like to do it?" 0 0
     if [ $? -eq 0 ]; then
         reboot
+    else 
+        clear
     fi
 }
 
