@@ -234,7 +234,7 @@ getDotfiles() {
     cd $HOME/Documents
     git clone https://github.com/santilococo/CocoRice.git
     cd CocoRice
-    sh scripts/bootstrap.sh
+    sh scripts/bootstrap.sh -w
     cd $lastFolder
 }
 
