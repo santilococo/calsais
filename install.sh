@@ -281,6 +281,4 @@ runScript() {
     done
 }
 
-# runScript
-# installPackages
-    getThePackages "N"
+runScript
