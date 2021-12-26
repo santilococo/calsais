@@ -255,6 +255,7 @@ steps=(
 runScript() {
     if [ -d "$HOME/Documents" ]; then
         getDotfiles
+        whiptail --title "CocoASAIS" --msgbox "All done!" 0 0
         exit 0
     fi
 
