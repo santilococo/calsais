@@ -25,4 +25,4 @@ sh CocoASAIS
 PRs are welcome.
 
 ## License <a name="license"></a>
-[MIT](https://choosealicense.com/licenses/mit/)
+[GNU GPLv3](https://choosealicense.com/licenses/gpl-3.0/)
