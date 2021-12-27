@@ -116,7 +116,7 @@ installPackage() {
             exit 1
             ;;
     esac
-    exitIfCancel "You must have an active internet connection" "${3}"
+    exitIfCancel "Package installation failed." "${3}"
 }
 
 checkForParu() {
@@ -129,7 +129,6 @@ checkForParu() {
 }
 
 getThePackages() {
-    checkForParu
     if [ ! -f "packages.csv" ]; then
         curl -LO "https://raw.githubusercontent.com/santilococo/CocoASAIS/master/packages.csv" > /dev/null 2>&1
     fi
@@ -144,7 +143,7 @@ getThePackages() {
 installImportantPackages() {
     whiptail --msgbox "We will start by installing some important packages in the background. Please wait." 0 0
     getThePackages "Y" "installImportantPackages"
-    runInChroot "systemctl enable NetworkManager; systemctl enable fstrim.timer"
+    runInChroot "systemctl enable NetworkManager > /dev/null 2>&1; systemctl enable fstrim.timer > /dev/null 2>&1"
 }
 
 generateFstab() {
@@ -239,6 +238,7 @@ EOF
 
 installNotImportantPackages() {
     whiptail --msgbox "Now, we will install some more packages (in the background). This may take long, please wait." 0 0
+    checkForParu
     getThePackages "N" "installNotImportantPackages"
 }
 
@@ -286,6 +286,7 @@ steps=(
 )
 
 runScript() {
+    clear
     if [ -d "$HOME/Documents" ]; then
         getDotfiles
         whiptail --title "CocoASAIS" --msgbox "All done!" 0 0
