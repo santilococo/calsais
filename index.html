@@ -119,15 +119,19 @@ installPackage() {
     exitIfCancel "You must have an active internet connection" "${3}"
 }
 
-getThePackages() {
-    if [ ! -f "packages.csv" ]; then
-        curl -LO "https://raw.githubusercontent.com/santilococo/CocoASAIS/master/packages.csv" > /dev/null 2>&1
-    fi
+checkForParu() {
     commOutput=$(runInChroot "command -v paru &> /dev/null || echo 1")
     if [ "$commOutput" = "1" ] && [ "${1}" = "N" ]; then
         runInChroot "sed -i 's/# %wheel ALL=(ALL) NOPASSWD: ALL/%wheel ALL=(ALL) NOPASSWD: ALL/' /etc/sudoers"
         runInChroot "cd /tmp; sudo -u $username git clone https://aur.archlinux.org/paru-bin.git; cd paru-bin; sudo -u $username makepkg -si --noconfirm; cd ..; rm -rf paru-bin"
         runInChroot "sed -i 's/%wheel ALL=(ALL) NOPASSWD: ALL/# %wheel ALL=(ALL) NOPASSWD: ALL/' /etc/sudoers"
+    fi
+}
+
+getThePackages() {
+    checkForParu
+    if [ ! -f "packages.csv" ]; then
+        curl -LO "https://raw.githubusercontent.com/santilococo/CocoASAIS/master/packages.csv" > /dev/null 2>&1
     fi
     local IFS=,
     while read -r NAME IMPORTANT AUR; do
