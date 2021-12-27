@@ -111,7 +111,7 @@ getThePackages() {
 }
 
 installImportantPackages() {
-    whiptail --msgbox "We will start by installing some important packages." 0 0
+    whiptail --msgbox "We will start by installing some important packages in the background. Please wait." 0 0
     getThePackages "Y" "installImportantPackages"
     runInChroot "systemctl enable NetworkManager; systemctl enable fstrim.timer"
 }
@@ -153,14 +153,14 @@ networkConf() {
 }
 
 askForPassword() {
-    password=$(whiptail --inputbox "Enter the password for ${1}." 0 0 3>&1 1>&2 2>&3)
+    password=$(whiptail --passwordbox "Enter the password for ${1}." 0 0 3>&1 1>&2 2>&3)
     exitIfCancel "You must enter a password." "${2}"
-    passwordRep=$(whiptail --inputbox "Reenter password." 0 0 3>&1 1>&2 2>&3)
+    passwordRep=$(whiptail --passwordbox "Reenter password." 0 0 3>&1 1>&2 2>&3)
     exitIfCancel "You must enter a password." "${2}"
     while ! [ "$password" = "$passwordRep" ]; do
-        password=$(whiptail --inputbox "Passwords do not match! Please enter the password again." 0 0 3>&1 1>&2 2>&3)
+        password=$(whiptail --passwordbox "Passwords do not match! Please enter the password again." 0 0 3>&1 1>&2 2>&3)
         exitIfCancel "You must enter a password." "${2}"
-        passwordRep=$(whiptail --inputbox "Reenter password." 0 0 3>&1 1>&2 2>&3)
+        passwordRep=$(whiptail --passwordbox "Reenter password." 0 0 3>&1 1>&2 2>&3)
         exitIfCancel "You must enter a password." "${2}"
     done
     unset passwordRep
@@ -213,7 +213,7 @@ EOF
 }
 
 installNotImportantPackages() {
-    whiptail --msgbox "Now, we will install some more packages. This may take long, please wait." 0 0
+    whiptail --msgbox "Now, we will install some more packages (in the background). This may take long, please wait." 0 0
     getThePackages "N" "installNotImportantPackages"
 }
 
