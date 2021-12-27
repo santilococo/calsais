@@ -120,8 +120,8 @@ getThePackages() {
         curl -LO "https://raw.githubusercontent.com/santilococo/CocoASAIS/master/packages.csv" > /dev/null 2>&1
     fi
     commOutput=$(command -v paru &> /dev/null)
-    if [ $? -eq 1 ]; then
-        runInChroot "cd /tmp; git clone https://aur.archlinux.org/paru.git; cd paru; makepkg -si --noconfirm; cd ..; rm -rf paru"
+    if [ $? -eq 1 ] && [ ! -z $username ]; then
+        runInChroot "su -l $username; cd /tmp; git clone https://aur.archlinux.org/paru.git; cd paru; makepkg -si --noconfirm; cd ..; rm -rf paru"
     fi
     local IFS=,
     while read -r NAME IMPORTANT AUR; do
@@ -215,7 +215,6 @@ userSetUp() {
     exitIfCancel "You must enter an username." "userSetUp"
     askForPassword "${username}" "userSetUp"
     runInChroot "useradd -m ${username};echo "${username}:${password}" | chpasswd; sed -i 's/# %wheel ALL=(ALL) ALL/%wheel ALL=(ALL) ALL/' /etc/sudoers; usermod -aG wheel ${username}"
-    unset username
     unset password
 }
 
