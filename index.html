@@ -105,7 +105,7 @@ installPackage() {
                 logStep "${3}"
                 exit 1
             fi
-            runInChroot "sudo -u $username paru -S ${1} > /dev/null 2>&1"
+            runInChroot "sudo -u $username paru -S --needed --noconfirm ${1} > /dev/null 2>&1"
             ;;
         N)
             pacstrap /mnt --needed ${1} > /dev/null 2>&1
