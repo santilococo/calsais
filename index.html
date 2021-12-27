@@ -30,7 +30,14 @@ updateSystemClock() {
 
 exitIfCancel() {
     if [ $? -eq 1 ]; then
-        whiptail --msgbox "${1} Therefore, the installation process will stop, but you can continue where you left off by running:\n\nsh CocoASAIS" 0 0
+        str="${1} Therefore, the installation process will stop, but you can continue where you left off by running:\n\nsh CocoASAIS"
+        newlines=$(printf $str | grep -c $'\n')
+        chars=$(echo $str | wc -c)
+        height=$(echo "$chars" "$newlines" | awk '{
+            x = (($1 - $2 + ($2 * 60)) / 60)
+            printf "%d", (x == int(x)) ? x : int(x) + 1
+        }')
+        whiptail --msgbox "$str" $height 60
         echo "${2}" > CocoASAIS.log
         exit 1
     fi
