@@ -101,7 +101,12 @@ installPackage() {
     # whiptail --msgbox "Installing '$1'." 0 0
     case ${2} in
         Y)
-            runInChroot "paru -S ${1} > /dev/null 2>&1"
+            if [ ! -z $username ]; then
+                whiptail --msgbox "Important packages cannot be installed with paru." 0 0
+                logStep "${3}"
+                exit 1
+            fi
+            runInChroot "sudo -u $username paru -S ${1} > /dev/null 2>&1"
             ;;
         N)
             pacstrap /mnt --needed ${1} > /dev/null 2>&1
@@ -119,8 +124,8 @@ getThePackages() {
     if [ ! -f "packages.csv" ]; then
         curl -LO "https://raw.githubusercontent.com/santilococo/CocoASAIS/master/packages.csv" > /dev/null 2>&1
     fi
-    commOutput=$(command -v paru &> /dev/null)
-    if [ $? -eq 1 ] && [ "${2}" = "N" ]; then
+    commOutput=$(runInChroot "command -v paru &> /dev/null || echo 1")
+    if [ "$commOutput" = "1" ] && [ "${1}" = "N" ]; then
         if [ ! -z $username ]; then
             username=$(whiptail --inputbox "Enter the username of the newly created user." 0 0 3>&1 1>&2 2>&3)
         fi
