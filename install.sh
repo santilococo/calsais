@@ -125,14 +125,9 @@ getThePackages() {
     fi
     commOutput=$(runInChroot "command -v paru &> /dev/null || echo 1")
     if [ "$commOutput" = "1" ] && [ "${1}" = "N" ]; then
-        if [ -z $username ]; then
-            username=$(whiptail --inputbox "Enter the username of the newly created user." 0 0 3>&1 1>&2 2>&3)
-        fi
-        # runInChroot "sed -i 's/%wheel ALL=(ALL) ALL/# %wheel ALL=(ALL) ALL/' -e 's/# %wheel ALL=(ALL) NOPASSWD: ALL/%wheel ALL=(ALL) NOPASSWD: ALL/' /etc/sudoers"
         runInChroot "sed -i 's/# %wheel ALL=(ALL) NOPASSWD: ALL/%wheel ALL=(ALL) NOPASSWD: ALL/' /etc/sudoers"
-        runInChroot "cd /tmp; sudo -u $username git clone https://aur.archlinux.org/paru-bin.git; cd paru; sudo -u $username makepkg -si --noconfirm; cd ..; rm -rf paru"
+        runInChroot "cd /tmp; sudo -u $username git clone https://aur.archlinux.org/paru-bin.git; cd paru-bin; sudo -u $username makepkg -si --noconfirm; cd ..; rm -rf paru-bin"
         runInChroot "sed -i 's/%wheel ALL=(ALL) NOPASSWD: ALL/# %wheel ALL=(ALL) NOPASSWD: ALL/' /etc/sudoers"
-        # runInChroot "sed -i 's/%wheel ALL=(ALL) NOPASSWD: ALL/# %wheel ALL=(ALL) NOPASSWD: ALL/' -e 's/# %wheel ALL=(ALL) ALL/%wheel ALL=(ALL) ALL/' /etc/sudoers"
     fi
     local IFS=,
     while read -r NAME IMPORTANT AUR; do
