@@ -4,7 +4,7 @@ alsa-utils,Y,N
 ani-cli-git,N,Y
 base,Y,N
 base-devel,Y,N
-bashmount,N,N
+bashmount,N,Y
 bc,N,N
 binwalk,N,N
 bitwarden,N,N
