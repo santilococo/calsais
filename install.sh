@@ -98,7 +98,7 @@ mountPart() {
 }
 
 installPackage() {
-    whiptail --infobox "Installing '$1'." 7 40
+    calcWidthAndRun "whiptail --infobox "Installing '$1'." 7 WIDTH"
     case ${2} in
         Y)
             if [ -z $username ]; then
@@ -183,15 +183,20 @@ networkConf() {
     unset hostname
 }
 
+calcWidthAndRun() {
+    width=$(echo "$@" | grep -oP '(?<=").*?(?=")' | wc -c)
+    echo $(eval $(echo "$@" | sed "s/WIDTH/$((${width}+8))/g"))
+}
+
 askForPassword() {
-    password=$(whiptail --passwordbox "Now, enter the password for ${1}." 8 40 3>&1 1>&2 2>&3)
+    password=$(calcWidthAndRun "whiptail --passwordbox \"Now, enter the password for ${1}.\" 8 WIDTH 3>&1 1>&2 2>&3")
     exitIfCancel "You must enter a password." "${2}"
-    passwordRep=$(whiptail --passwordbox "Reenter password." 8 30 3>&1 1>&2 2>&3)
+    passwordRep=$(calcWidthAndRun "whiptail --passwordbox \"Reenter password.\" 8 WIDTH 3>&1 1>&2 2>&3")
     exitIfCancel "You must enter a password." "${2}"
     while ! [ "$password" = "$passwordRep" ]; do
-        password=$(whiptail --passwordbox "Passwords do not match! Please enter the password again." 8 65 3>&1 1>&2 2>&3)
+        password=$(calcWidthAndRun "whiptail --passwordbox \"Passwords do not match! Please enter the password again.\" 8 WIDTH 3>&1 1>&2 2>&3")
         exitIfCancel "You must enter a password." "${2}"
-        passwordRep=$(whiptail --passwordbox "Reenter password." 8 30 3>&1 1>&2 2>&3)
+        passwordRep=$(calcWidthAndRun "whiptail --passwordbox \"Reenter password.\" 8 WIDTH 3>&1 1>&2 2>&3")
         exitIfCancel "You must enter a password." "${2}"
     done
     unset passwordRep
@@ -318,4 +323,5 @@ runScript() {
     done
 }
 
-runScript
+# runScript
+askForPassword
