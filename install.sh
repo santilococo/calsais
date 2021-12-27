@@ -97,15 +97,36 @@ mountPart() {
     swapon "$swapPart" > /dev/null
 }
 
+installPackage() {
+    # whiptail --msgbox "Installing '$1'." 0 0
+    case ${2} in
+        Y)
+            runInChroot "paru -S ${1} > /dev/null 2>&1"
+            ;;
+        N)
+            pacstrap /mnt --needed ${1} > /dev/null 2>&1
+            ;;
+        ?)
+            whiptail --msgbox "TAG must be Y or N in packages.csv file." 0 0
+            logStep "${2}"
+            exit 1
+            ;;
+    esac
+    exitIfCancel "You must have an active internet connection" "${2}"
+}
+
 getThePackages() {
     if [ ! -f "packages.csv" ]; then
         curl -LO "https://raw.githubusercontent.com/santilococo/CocoASAIS/master/packages.csv" > /dev/null 2>&1
     fi
+    commOutput=$(command -v paru &> /dev/null)
+    if [ $? -eq 1 ]; then
+        runInChroot "cd /tmp; git clone https://aur.archlinux.org/paru.git; cd paru; makepkg -si --noconfirm; cd ..; rm -rf paru"
+    fi
     local IFS=,
-    while read -r NAME IMPORTANT; do
+    while read -r NAME IMPORTANT AUR; do
         if [ "$IMPORTANT" = "${1}" ]; then
-            installPackage "$NAME"
-            exitIfCancel "You must have an active internet connection" "${2}"
+            installPackage "$NAME" "$AUR" "${2}"
         fi
 	done < packages.csv
 }
@@ -173,6 +194,7 @@ setRootPassword() {
 }
 
 updateMirrors() {
+    whiptail --yesno "Would you like to update your mirrors by choosing your closest countries?" 0 0 || return
     runInChroot "cp /etc/pacman.d/mirrorlist /etc/pacman.d/mirrorlist.backup"
     local IFS=$'\n'
     setDelimiters "" "OFF"
@@ -183,15 +205,9 @@ updateMirrors() {
     runInChroot "sudo reflector --country "${countriesFmt//\"/}" --protocol https --sort rate --save /etc/pacman.d/mirrorlist"
 }
 
-installPackage() {
-    # whiptail --msgbox "Installing '$1'." 0 0
-    pacstrap /mnt --needed ${1} > /dev/null 2>&1
-    return $?
-}
-
 grubSetUp() {
     # TODO: Prompt user for efi-directory
-    runInChroot "grub-install --target=x86_64-efi --efi-directory=/boot/efi --bootloader-id=GRUB; grub-mkconfig -o /boot/grub/grub.cfg"
+    runInChroot "grub-install --target=x86_64-efi --efi-directory=/boot/efi --bootloader-id=GRUB; grub-mkconfig -o /boot/grub/grub.cfg" > /dev/null 2>&1
 }
 
 userSetUp() {
@@ -229,10 +245,8 @@ finishInstallation() {
 
 installLastPrograms() {
     sudo pacman -Sy
-    sudo pacman -S zsh
     sh -c "$(curl -fsSL https://raw.github.com/ohmyzsh/ohmyzsh/master/tools/install.sh)"
     git clone https://github.com/romkatv/powerlevel10k.git $ZSH_CUSTOM/themes/powerlevel10k
-    git clone https://aur.archlinux.org/paru.git; cd paru; makepkg -si --noconfirm; cd ..; rm -rf paru
 }
 
 getDotfiles() {
