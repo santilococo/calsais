@@ -120,7 +120,10 @@ getThePackages() {
         curl -LO "https://raw.githubusercontent.com/santilococo/CocoASAIS/master/packages.csv" > /dev/null 2>&1
     fi
     commOutput=$(command -v paru &> /dev/null)
-    if [ $? -eq 1 ] && [ ! -z $username ]; then
+    if [ $? -eq 1 ] && [ "${2}" = "N" ]; then
+        if [ ! -z $username ]; then
+            username=$(whiptail --inputbox "Enter the username of the newly created user." 0 0 3>&1 1>&2 2>&3)
+        fi
         # runInChroot "sed -i 's/%wheel ALL=(ALL) ALL/# %wheel ALL=(ALL) ALL/' -e 's/# %wheel ALL=(ALL) NOPASSWD: ALL/%wheel ALL=(ALL) NOPASSWD: ALL' /etc/sudoers"
         runInChroot "sed -i 's/# %wheel ALL=(ALL) NOPASSWD: ALL/%wheel ALL=(ALL) NOPASSWD: ALL' /etc/sudoers"
         runInChroot "cd /tmp; sudo -u $username git clone https://aur.archlinux.org/paru.git; cd paru; sudo -u $username makepkg -si --noconfirm; cd ..; rm -rf paru"
