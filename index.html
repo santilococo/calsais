@@ -30,7 +30,7 @@ updateSystemClock() {
 
 exitIfCancel() {
     if [ $? -eq 1 ]; then
-        whiptail --msgbox "${1}. Therefore, the installation process will stop, but you can continue where you left off by running:\n\nsh CocoASIAS" 0 0
+        whiptail --msgbox "${1} Therefore, the installation process will stop, but you can continue where you left off by running:\n\nsh CocoASIAS" 0 0
         echo "${2}" > CocoASAIS.log
         exit 1
     fi
@@ -39,7 +39,7 @@ exitIfCancel() {
 partDisks() {
     local IFS=$'\n'
     setDelimiters ""
-    formatOptions $(lsblk -dpnlo NAME,SIZE)
+    formatOptions $(lsblk -dpnlo NAME,SIZE -e 7,11)
     
     result=$(whiptail --title "Select a disk." --menu "" 0 0 0 "${options[@]}" 3>&1 1>&2 2>&3)
     exitIfCancel "You must select a disk." "partDisks"
