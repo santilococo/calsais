@@ -98,6 +98,7 @@ mountPart() {
 }
 
 installPackage() {
+    whiptail --infobox "Installing '$1'." 7 40
     case ${2} in
         Y)
             if [ -z $username ]; then
@@ -105,7 +106,7 @@ installPackage() {
                 logStep "${3}"
                 exit 1
             fi
-            runInChroot "sudo -u $username paru -S --needed --noconfirm --skipreview ${1} > /dev/null 2>&1"
+            runInChroot "sudo -u $username paru -S --needed --noconfirm --skipreview ${1}" > /dev/null 2>&1
             ;;
         N)
             pacstrap /mnt --needed ${1} > /dev/null 2>&1
@@ -120,10 +121,10 @@ installPackage() {
 }
 
 checkForParu() {
-    commOutput=$(runInChroot "command -v paru &> /dev/null || echo 1")
+    commOutput=$(runInChroot "command -v paru  > /dev/null 2>&1 || echo 1")
     if [ "$commOutput" = "1" ] && [ "${1}" = "N" ]; then
         runInChroot "sed -i 's/# %wheel ALL=(ALL) NOPASSWD: ALL/%wheel ALL=(ALL) NOPASSWD: ALL/' /etc/sudoers"
-        runInChroot "cd /tmp; sudo -u $username git clone https://aur.archlinux.org/paru-bin.git; cd paru-bin; sudo -u $username makepkg -si --noconfirm; cd ..; rm -rf paru-bin"
+        runInChroot "cd /tmp; sudo -u $username git clone https://aur.archlinux.org/paru-bin.git; cd paru-bin; sudo -u $username makepkg -si --noconfirm; cd ..; rm -rf paru-bin"  > /dev/null 2>&1
         runInChroot "sed -i 's/%wheel ALL=(ALL) NOPASSWD: ALL/# %wheel ALL=(ALL) NOPASSWD: ALL/' /etc/sudoers"
     fi
 }
@@ -141,9 +142,9 @@ getThePackages() {
 }
 
 installImportantPackages() {
-    whiptail --msgbox "We will start by installing some important packages in the background. Please wait." 0 0
+    whiptail --msgbox "We will start by installing some important packages in the background. Please press OK and wait." 0 0
     getThePackages "Y" "installImportantPackages"
-    runInChroot "systemctl enable NetworkManager > /dev/null 2>&1; systemctl enable fstrim.timer > /dev/null 2>&1"
+    runInChroot "systemctl enable NetworkManager; systemctl enable fstrim.timer" 2> /dev/null
 }
 
 generateFstab() {
@@ -183,7 +184,7 @@ networkConf() {
 }
 
 askForPassword() {
-    password=$(whiptail --passwordbox "Enter the password for ${1}." 8 40 3>&1 1>&2 2>&3)
+    password=$(whiptail --passwordbox "Now, enter the password for ${1}." 8 40 3>&1 1>&2 2>&3)
     exitIfCancel "You must enter a password." "${2}"
     passwordRep=$(whiptail --passwordbox "Reenter password." 8 30 3>&1 1>&2 2>&3)
     exitIfCancel "You must enter a password." "${2}"
@@ -205,6 +206,7 @@ setRootPassword() {
 updateMirrors() {
     whiptail --yesno "Would you like to update your mirrors by choosing your closest countries?" 0 0 || return
     runInChroot "cp /etc/pacman.d/mirrorlist /etc/pacman.d/mirrorlist.backup"
+    runInChroot "curl -o /etc/pacman.d/mirrorlist.pacnew https://archlinux.org/mirrorlist/all/"
     local IFS=$'\n'
     setDelimiters "" "OFF"
     formatOptions $(cat /mnt/etc/pacman.d/mirrorlist.pacnew | grep '^##' | cut -d' ' -f2- | sed -n '5~1p')
@@ -237,7 +239,7 @@ EOF
 }
 
 installNotImportantPackages() {
-    whiptail --msgbox "Now, we will install some more packages (in the background). This may take long, please wait." 0 0
+    whiptail --msgbox "Now, we will install a few more packages (in the background). Press OK and note that it may take a long time, please wait." 0 0
     checkForParu
     getThePackages "N" "installNotImportantPackages"
 }
