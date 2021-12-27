@@ -153,7 +153,7 @@ networkConf() {
 }
 
 askForPassword() {
-    password=$(whiptail --passwordbox "Enter the password for ${1}." 8 30 3>&1 1>&2 2>&3)
+    password=$(whiptail --passwordbox "Enter the password for ${1}." 8 40 3>&1 1>&2 2>&3)
     exitIfCancel "You must enter a password." "${2}"
     passwordRep=$(whiptail --passwordbox "Reenter password." 8 30 3>&1 1>&2 2>&3)
     exitIfCancel "You must enter a password." "${2}"
@@ -176,7 +176,7 @@ updateMirrors() {
     runInChroot "cp /etc/pacman.d/mirrorlist /etc/pacman.d/mirrorlist.backup"
     local IFS=$'\n'
     setDelimiters "" "OFF"
-    formatOptions $(cat /mnt/etc/pacman.d/mirrorlist | grep '^##' | cut -d' ' -f2- | sed -n '5~1p')
+    formatOptions $(cat /mnt/etc/pacman.d/mirrorlist.pacnew | grep '^##' | cut -d' ' -f2- | sed -n '5~1p')
     countries=$(whiptail --title "Countries" --checklist "" 0 0 0 "${options[@]}" 3>&1 1>&2 2>&3)
     exitIfCancel "You must select at least one country." "updateMirrors"
     countriesFmt=$(echo "$countries" | sed -r 's/" "/,/g')
