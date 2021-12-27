@@ -48,7 +48,7 @@ partDisks() {
     # TODO: Add swapfile as an alternative to swap partition
     whiptail --yesno "Do you want me to automatically partition and format the disk for you?" 0 0
     if [ $? -eq 1 ]; then
-        whiptail --msgbox "You will partition the disk yourself with gdisk and then when finished you will continue with the installation." 0 0
+        whiptail --msgbox "You will partition the disk yourself with gdisk and then, when finished, you will continue with the installation." 0 0
         gdisk $disk
         # TODO: Ask for home partition
         formatOptions $(lsblk ${disk} -pnlo NAME,SIZE,MOUNTPOINTS | sed -n '2~1p')
@@ -59,7 +59,7 @@ partDisks() {
         exitIfCancel "You must select the root partition." "partDisks"
         rootPart=$(echo $result | cut -d' ' -f1)
         whiptail --yesno "Do you have a swap partition?" 0 0
-        if [ $? -eq 1 ]; then
+        if [ $? -eq 0 ]; then
             result=$(whiptail --title "Select the swap partition." --menu "" 0 0 0 "${options[@]}" 3>&1 1>&2 2>&3)
             exitIfCancel "You must select the swap partition." "partDisks"
             swapPart=$(echo $result | cut -d' ' -f1)
