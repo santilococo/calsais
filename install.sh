@@ -213,6 +213,7 @@ EOF
 }
 
 installNotImportantPackages() {
+    whiptail --msgbox "Now, we will install some more packages. This may take long, please wait." 0 0
     getThePackages "N" "installNotImportantPackages"
 }
 
