@@ -99,18 +99,20 @@ mountPart() {
 
 getThePackages() {
     if [ ! -f "packages.csv" ]; then
-        curl -LO "https://raw.githubusercontent.com/santilococo/CocoASAIS/master/packages.csv"
+        curl -LO "https://raw.githubusercontent.com/santilococo/CocoASAIS/master/packages.csv" > /dev/null 2>&1
     fi
     local IFS=,
     while read -r NAME IMPORTANT; do
         if [ "$IMPORTANT" = "${1}" ]; then
             installPackage "$NAME"
+            exitIfCancel "You must have an active internet connection" "${2}"
         fi
 	done < packages.csv
 }
 
 installImportantPackages() {
-    getThePackages "Y"
+    whiptail --msgbox "We will start by installing some important packages." 0 0
+    getThePackages "Y" "installImportantPackages"
     runInChroot "systemctl enable NetworkManager; systemctl enable fstrim.timer"
 }
 
@@ -182,8 +184,9 @@ updateMirrors() {
 }
 
 installPackage() {
-    whiptail --infobox "Installing '$1'." 0 0
-    pacstrap /mnt ${1}
+    whiptail --msgbox "Installing '$1'." 0 0
+    pacstrap /mnt --needed ${1} > /dev/null 2>&1
+    return $?
 }
 
 grubSetUp() {
@@ -209,6 +212,10 @@ EOF
     rm /mnt/cocoScript
 }
 
+installNotImportantPackages() {
+    getThePackages "N" "installNotImportantPackages"
+}
+
 finishInstallation() {
     umount -R /mnt
     whiptail --yesno "Finally, the PC needs to restart, would you like to do it?" 0 0
@@ -221,7 +228,6 @@ finishInstallation() {
 
 installLastPrograms() {
     sudo pacman -Sy
-    getThePackages "N"
     sudo pacman -S zsh
     sh -c "$(curl -fsSL https://raw.github.com/ohmyzsh/ohmyzsh/master/tools/install.sh)"
     git clone https://github.com/romkatv/powerlevel10k.git $ZSH_CUSTOM/themes/powerlevel10k
@@ -251,6 +257,7 @@ steps=(
     updateMirrors
     grubSetUp
     userSetUp
+    installNotImportantPackages
     finishInstallation
 )
 
