@@ -184,7 +184,7 @@ updateMirrors() {
 }
 
 installPackage() {
-    whiptail --msgbox "Installing '$1'." 0 0
+    # whiptail --msgbox "Installing '$1'." 0 0
     pacstrap /mnt --needed ${1} > /dev/null 2>&1
     return $?
 }
