@@ -153,14 +153,14 @@ networkConf() {
 }
 
 askForPassword() {
-    password=$(whiptail --passwordbox "Enter the password for ${1}." 0 0 3>&1 1>&2 2>&3)
+    password=$(whiptail --passwordbox "Enter the password for ${1}." 8 30 3>&1 1>&2 2>&3)
     exitIfCancel "You must enter a password." "${2}"
-    passwordRep=$(whiptail --passwordbox "Reenter password." 0 0 3>&1 1>&2 2>&3)
+    passwordRep=$(whiptail --passwordbox "Reenter password." 8 30 3>&1 1>&2 2>&3)
     exitIfCancel "You must enter a password." "${2}"
     while ! [ "$password" = "$passwordRep" ]; do
-        password=$(whiptail --passwordbox "Passwords do not match! Please enter the password again." 0 0 3>&1 1>&2 2>&3)
+        password=$(whiptail --passwordbox "Passwords do not match! Please enter the password again." 8 65 3>&1 1>&2 2>&3)
         exitIfCancel "You must enter a password." "${2}"
-        passwordRep=$(whiptail --passwordbox "Reenter password." 0 0 3>&1 1>&2 2>&3)
+        passwordRep=$(whiptail --passwordbox "Reenter password." 8 30 3>&1 1>&2 2>&3)
         exitIfCancel "You must enter a password." "${2}"
     done
     unset passwordRep
