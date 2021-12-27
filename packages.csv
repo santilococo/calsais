@@ -15,7 +15,7 @@ cmake,N,N
 cppcheck,N,N
 cronie,N,N
 detox,N,N
-dialog,Y,N
+dialog,N,N
 discord,N,N
 docker,N,N
 docker-compose,N,N
@@ -63,8 +63,8 @@ networkmanager,Y,N
 nitrogen,N,N
 nmap,N,N
 noisetorch,N,Y
-noto-fonts,Y,N
-noto-fonts-emoji,Y,N
+noto-fonts,N,N
+noto-fonts-emoji,N,N
 ntfs-3g,N,N
 nvidia,Y,N
 nvidia-settings,Y,N
@@ -112,7 +112,7 @@ tk,N,N
 tmux,N,N
 traceroute,N,N
 trash-cli,N,N
-ttf-fira-code,Y,N
+ttf-fira-code,N,N
 ttf-joypixels,N,N
 ttf-meslo-nerd-font-powerlevel10k,N,Y
 unclutter,N,N
