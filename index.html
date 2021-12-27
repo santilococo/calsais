@@ -104,6 +104,16 @@ mountPart() {
     swapon "$swapPart" > /dev/null
 }
 
+debug() {
+    if [ $debugFlag = true ]; then
+        while read input; do
+            echo $input
+        done
+    else
+        return
+    fi
+}
+
 installPackage() {
     calcWidthAndRun "whiptail --infobox "Installing '$1'." 7 WIDTH"
     case ${2} in
@@ -113,10 +123,10 @@ installPackage() {
                 logStep "${3}"
                 exit 1
             fi
-            runInChroot "sudo -u $username paru -S --needed --noconfirm --skipreview ${1}" > /dev/null 2>&1
+            runInChroot "sudo -u $username paru -S --needed --noconfirm --skipreview ${1}" 2>&1 | debug
             ;;
         N)
-            pacstrap /mnt --needed ${1} > /dev/null 2>&1
+            pacstrap /mnt --needed ${1} 2>&1 | debug
             ;;
         ?)
             whiptail --msgbox "AUR must be Y or N in packages.csv file." 0 0
@@ -218,7 +228,7 @@ setRootPassword() {
 updateMirrors() {
     whiptail --yesno "Would you like to update your mirrors by choosing your closest countries?" 0 0 || return
     runInChroot "cp /etc/pacman.d/mirrorlist /etc/pacman.d/mirrorlist.backup"
-    runInChroot "curl -o /etc/pacman.d/mirrorlist.pacnew https://archlinux.org/mirrorlist/all/"
+    runInChroot "curl -o /etc/pacman.d/mirrorlist.pacnew https://archlinux.org/mirrorlist/all/" > /dev/null 2>&1
     local IFS=$'\n'
     setDelimiters "" "OFF"
     formatOptions $(cat /mnt/etc/pacman.d/mirrorlist.pacnew | grep '^##' | cut -d' ' -f2- | sed -n '5~1p')
@@ -307,6 +317,22 @@ runScript() {
         exit 0
     fi
 
+    while getopts ':hd' flag; do
+        case $flag in
+            h)
+                printf "usage: ${0##*/} [command]\n\t-h\t\t\tPrint this help message.\n\t-d\t\t\tDebug."
+                exit 0
+                ;;
+            d)
+                debugFlag=true
+                ;;
+            ?)
+                printf '%s: invalid option -''%s'\\n "${0##*/}" "$OPTARG"
+                exit 1
+                ;;
+        esac
+    done
+
     i=0; found=false
     if [ -f "CocoASAIS.log" ]; then
         lastStep=$(cat CocoASAIS.log)
@@ -330,5 +356,4 @@ runScript() {
     done
 }
 
-# runScript
-askForPassword
+runScript
