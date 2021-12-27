@@ -107,12 +107,12 @@ installPackage() {
             pacstrap /mnt --needed ${1} > /dev/null 2>&1
             ;;
         ?)
-            whiptail --msgbox "AUR must be Y or N in packages.csv file." 0 0
-            logStep "${3}"
+            whiptail --msgbox "TAG must be Y or N in packages.csv file." 0 0
+            logStep "${2}"
             exit 1
             ;;
     esac
-    exitIfCancel "You must have an active internet connection" "${3}"
+    exitIfCancel "You must have an active internet connection" "${2}"
 }
 
 getThePackages() {
