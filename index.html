@@ -31,13 +31,13 @@ updateSystemClock() {
 exitIfCancel() {
     if [ $? -eq 1 ]; then
         str="${1} Therefore, the installation process will stop, but you can continue where you left off by running:\n\nsh CocoASAIS"
-        newlines=$(printf $str | grep -c $'\n')
-        chars=$(echo $str | wc -c)
+        newlines=$(printf "$str" | grep -c $'\n')
+        chars=$(echo "$str" | wc -c)
         height=$(echo "$chars" "$newlines" | awk '{
             x = (($1 - $2 + ($2 * 60)) / 60)
             printf "%d", (x == int(x)) ? x : int(x) + 1
         }')
-        whiptail --msgbox "$str" $height 60
+        whiptail --msgbox "$str" $((5+$height)) 60
         echo "${2}" > CocoASAIS.log
         exit 1
     fi
@@ -311,27 +311,22 @@ steps=(
 
 runScript() {
     clear
+
+    while getopts ':hd' flag; do
+        case $flag in
+            h)  printf "usage: ${0##*/} [command]\n\t-h\t\t\tPrint this help message.\n\t-d\t\t\tDebug."
+                exit 0 ;;
+            d)  debugFlag=true ;;
+            ?)  printf '%s: invalid option -''%s'\\n "${0##*/}" "$OPTARG"
+                exit 1 ;;
+        esac
+    done
+
     if [ -d "$HOME/Documents" ]; then
         getDotfiles
         whiptail --title "CocoASAIS" --msgbox "All done!" 0 0
         exit 0
     fi
-
-    while getopts ':hd' flag; do
-        case $flag in
-            h)
-                printf "usage: ${0##*/} [command]\n\t-h\t\t\tPrint this help message.\n\t-d\t\t\tDebug."
-                exit 0
-                ;;
-            d)
-                debugFlag=true
-                ;;
-            ?)
-                printf '%s: invalid option -''%s'\\n "${0##*/}" "$OPTARG"
-                exit 1
-                ;;
-        esac
-    done
 
     i=0; found=false
     if [ -f "CocoASAIS.log" ]; then
@@ -356,4 +351,4 @@ runScript() {
     done
 }
 
-runScript
+runScript $@
