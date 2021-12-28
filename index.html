@@ -105,17 +105,17 @@ mountPart() {
 }
 
 debug() {
-    if [ $debugFlag = true ]; then
-        while read input; do
+    while read input; do
+        if [ $debugFlag = true ]; then
             echo $input
-        done
-    else
-        return
-    fi
+        else
+            echo $input > /dev/null 2>&1
+        fi
+    done
 }
 
 installPackage() {
-    calcWidthAndRun "whiptail --infobox "Installing '$1'." 7 WIDTH"
+    calcWidthAndRun "whiptail --infobox \"Installing '$1'.\" 7 WIDTH"
     case ${2} in
         Y)
             if [ -z $username ]; then
@@ -147,6 +147,7 @@ checkForParu() {
 }
 
 getThePackages() {
+    set -o pipefail
     if [ ! -f "packages.csv" ]; then
         curl -LO "https://raw.githubusercontent.com/santilococo/CocoASAIS/master/packages.csv" > /dev/null 2>&1
     fi
@@ -155,7 +156,8 @@ getThePackages() {
         if [ "$IMPORTANT" = "${1}" ]; then
             installPackage "$NAME" "$AUR" "${2}"
         fi
-	done < packages.csv
+    done < packages.csv
+    set +o pipefail
 }
 
 installImportantPackages() {
@@ -310,9 +312,10 @@ steps=(
 )
 
 runScript() {
+    debugFlag=false
     while getopts ':hd' flag; do
         case $flag in
-            h)  printf "usage: ${0##*/} [command]\n\t-h\t\t\tPrint this help message.\n\t-d\t\t\tDebug."
+            h)  printf "usage: ${0##*/} [command]\n\t-h\tPrint this help message.\n\t-d\tDebug.\n"
                 exit 0 ;;
             d)  debugFlag=true ;;
             ?)  printf '%s: invalid option -''%s'\\n "${0##*/}" "$OPTARG"
