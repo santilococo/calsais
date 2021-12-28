@@ -161,7 +161,7 @@ getThePackages() {
 }
 
 installImportantPackages() {
-    calcHeightAndRun "whiptail --msgbox \"We will start by installing some important packages in the background. Please press OK and wait.\" 8 HEIGHT"
+    calcHeightAndRun "whiptail --msgbox \"We will start by installing some important packages in the background. Please press OK and wait.\" 8 HEIGHT 3>&1 1>&2 2>&3"
     getThePackages "Y" "installImportantPackages"
     runInChroot "systemctl enable NetworkManager; systemctl enable fstrim.timer" 2> /dev/null
 }
@@ -274,7 +274,7 @@ EOF
 }
 
 installNotImportantPackages() {
-    calcHeightAndRun "whiptail --msgbox \"Now, we will install a few more packages (in the background). Press OK and wait (it may take some time).\" 8 HEIGHT"
+    calcHeightAndRun "whiptail --msgbox \"Now, we will install a few more packages (in the background). Press OK and wait (it may take some time).\" 8 HEIGHT 3>&1 1>&2 2>&3"
     checkForParu
     getThePackages "N" "installNotImportantPackages"
 }
