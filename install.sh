@@ -161,7 +161,7 @@ getThePackages() {
 }
 
 installImportantPackages() {
-    whiptail --msgbox "We will start by installing some important packages in the background. Please press OK and wait." 0 0
+    calcHeightAndRun "whiptail --msgbox \"We will start by installing some important packages in the background. Please press OK and wait.\" 8 HEIGHT"
     getThePackages "Y" "installImportantPackages"
     runInChroot "systemctl enable NetworkManager; systemctl enable fstrim.timer" 2> /dev/null
 }
@@ -205,6 +205,17 @@ networkConf() {
 calcWidthAndRun() {
     width=$(echo "$@" | grep -oP '(?<=").*?(?=")' | wc -c)
     echo $(eval $(echo "$@" | sed "s/WIDTH/$((${width}+8))/g"))
+}
+
+calcHeightAndRun() {
+    str=$(echo "$@" | grep -oP '(?<=").*?(?=")')
+    newlines=$(printf "$str" | grep -c $'\n')
+    chars=$(echo "$str" | wc -c)
+    height=$(echo "$chars" "$newlines" | awk '{
+        x = (($1 - $2 + ($2 * 60)) / 60)
+        printf "%d", (x == int(x)) ? x : int(x) + 1
+    }')
+    echo $(eval $(echo "$@" | sed "s/HEIGHT/$((5+$height))/g"))
 }
 
 askForPassword() {
@@ -263,7 +274,7 @@ EOF
 }
 
 installNotImportantPackages() {
-    whiptail --msgbox "Now, we will install a few more packages (in the background). Press OK and note that it may take a long time, please wait." 0 0
+    calcHeightAndRun "whiptail --msgbox \"Now, we will install a few more packages (in the background). Press OK and wait (it may take some time).\" 8 HEIGHT"
     checkForParu
     getThePackages "N" "installNotImportantPackages"
 }
