@@ -117,7 +117,7 @@ debug() {
 installPackage() {
     calcWidthAndRun "whiptail --infobox \"Installing '$1'.\" 7 WIDTH"
     case ${2} in
-        Y)
+        Y)  
             if [ -z $username ]; then
                 whiptail --msgbox "Important packages cannot be installed with paru." 0 0
                 logStep "${3}"
@@ -125,7 +125,7 @@ installPackage() {
             fi
             runInChroot "sudo -u $username paru -S --needed --noconfirm --skipreview ${1}" 2>&1 | debug
             ;;
-        N)
+        N)  
             pacstrap /mnt --needed ${1} 2>&1 | debug
             ;;
         ?)
@@ -139,7 +139,7 @@ installPackage() {
 
 checkForParu() {
     commOutput=$(runInChroot "command -v paru  > /dev/null 2>&1 || echo 1")
-    if [ "$commOutput" = "1" ] && [ "${1}" = "N" ]; then
+    if [ "$commOutput" = "1" ]; then
         runInChroot "sed -i 's/# %wheel ALL=(ALL) NOPASSWD: ALL/%wheel ALL=(ALL) NOPASSWD: ALL/' /etc/sudoers"
         runInChroot "cd /tmp; sudo -u $username git clone https://aur.archlinux.org/paru-bin.git; cd paru-bin; sudo -u $username makepkg -si --noconfirm; cd ..; rm -rf paru-bin"  > /dev/null 2>&1
         runInChroot "sed -i 's/%wheel ALL=(ALL) NOPASSWD: ALL/# %wheel ALL=(ALL) NOPASSWD: ALL/' /etc/sudoers"
@@ -326,16 +326,13 @@ runScript() {
     debugFlag=false
     while getopts ':hd' flag; do
         case $flag in
-            h)  printf "usage: ${0##*/} [command]\n\t-h\tPrint this help message.\n\t-d\tDebug.\n"
-                exit 0 ;;
+            h)  printf "usage: ${0##*/} [command]\n\t-h\tPrint this help message.\n\t-d\tDebug.\n" && exit 0 ;;
             d)  debugFlag=true ;;
-            ?)  printf '%s: invalid option -''%s'\\n "${0##*/}" "$OPTARG"
-                exit 1 ;;
+            ?)  printf '%s: invalid option -''%s'\\n "${0##*/}" "$OPTARG" && exit 1 ;;
         esac
     done
 
     clear
-
     if [ -d "$HOME/Documents" ]; then
         getDotfiles
         whiptail --title "CocoASAIS" --msgbox "All done!" 0 0
