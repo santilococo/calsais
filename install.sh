@@ -142,7 +142,6 @@ checkForParu() {
     if [ "$commOutput" = "1" ]; then
         runInChroot "sed -i 's/# %wheel ALL=(ALL) NOPASSWD: ALL/%wheel ALL=(ALL) NOPASSWD: ALL/' /etc/sudoers"
         runInChroot "cd /tmp; sudo -u $username git clone https://aur.archlinux.org/paru-bin.git; cd paru-bin; sudo -u $username makepkg -si --noconfirm; cd ..; rm -rf paru-bin"  > /dev/null 2>&1
-        runInChroot "sed -i 's/%wheel ALL=(ALL) NOPASSWD: ALL/# %wheel ALL=(ALL) NOPASSWD: ALL/' /etc/sudoers"
     fi
 }
 
@@ -161,7 +160,7 @@ getThePackages() {
 }
 
 installImportantPackages() {
-    calcHeightAndRun "whiptail --msgbox \"We will start by installing some important packages in the background. Please press OK and wait.\" 8 HEIGHT 3>&1 1>&2 2>&3"
+    calcHeightAndRun "whiptail --msgbox \"We will start by installing some important packages in the background. Please press OK and wait.\" HEIGHT 60 3>&1 1>&2 2>&3"
     getThePackages "Y" "installImportantPackages"
     runInChroot "systemctl enable NetworkManager; systemctl enable fstrim.timer" 2> /dev/null
 }
@@ -257,7 +256,7 @@ grubSetUp() {
 }
 
 userSetUp() {
-    username=$(whiptail --inputbox "Enter the new username." 0 0 3>&1 1>&2 2>&3)
+    export username=$(whiptail --inputbox "Enter the new username." 0 0 3>&1 1>&2 2>&3)
     exitIfCancel "You must enter an username." "userSetUp"
     askForPassword "${username}" "userSetUp"
     runInChroot "useradd -m ${username};echo "${username}:${password}" | chpasswd; sed -i 's/# %wheel ALL=(ALL) ALL/%wheel ALL=(ALL) ALL/' /etc/sudoers; usermod -aG wheel ${username}"
@@ -274,9 +273,10 @@ EOF
 }
 
 installNotImportantPackages() {
-    calcHeightAndRun "whiptail --msgbox \"Now, we will install a few more packages (in the background). Press OK and wait (it may take some time).\" 8 HEIGHT 3>&1 1>&2 2>&3"
+    calcHeightAndRun "whiptail --msgbox \"Now, we will install a few more packages (in the background). Press OK and wait (it may take some time).\" HEIGHT 60 3>&1 1>&2 2>&3"
     checkForParu
     getThePackages "N" "installNotImportantPackages"
+    runInChroot "sed -i 's/%wheel ALL=(ALL) NOPASSWD: ALL/# %wheel ALL=(ALL) NOPASSWD: ALL/' /etc/sudoers"
 }
 
 finishInstallation() {
