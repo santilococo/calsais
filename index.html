@@ -310,8 +310,6 @@ steps=(
 )
 
 runScript() {
-    clear
-
     while getopts ':hd' flag; do
         case $flag in
             h)  printf "usage: ${0##*/} [command]\n\t-h\t\t\tPrint this help message.\n\t-d\t\t\tDebug."
@@ -321,6 +319,8 @@ runScript() {
                 exit 1 ;;
         esac
     done
+
+    clear
 
     if [ -d "$HOME/Documents" ]; then
         getDotfiles
