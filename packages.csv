@@ -22,8 +22,6 @@ efibootmgr,Y,B
 filezilla,N,B
 firefox,N,B
 flameshot,N,B
-foxitreader,N,B
-fsearch,N,B
 fzf,N,B
 gdb,N,B
 gimp,N,B
@@ -122,6 +120,8 @@ brave-bin,N,C
 droidcam,N,C
 exifcleaner-bin,N,C
 ferdi-bin,N,C
+foxitreader,N,C
+fsearch,N,C
 jetbrains-toolbox,N,C
 libxft-bgra,N,C
 mutt-wizard-git,N,C
