@@ -143,14 +143,14 @@ checkForParu() {
     commOutput=$(runInChroot "command -v paru  > /dev/null 2>&1 || echo 1")
     if [ "$commOutput" = "1" ]; then
         runInChroot "sed -i 's/# %wheel ALL=(ALL) NOPASSWD: ALL/%wheel ALL=(ALL) NOPASSWD: ALL/' /etc/sudoers"
-        runInChroot "cd /tmp; sudo -u $username git clone https://aur.archlinux.org/paru-bin.git; cd paru-bin; sudo -u $username makepkg -si --noconfirm; cd ..; rm -rf paru-bin"  > /dev/null 2>&1
+        runInChroot "cd /tmp; sudo -u $username git clone https://aur.archlinux.org/paru-bin.git; cd paru-bin; sudo -u $username makepkg -si --noconfirm; cd ..; rm -rf paru-bin" 2>&1 | debug
     fi
 }
 
 getThePackages() {
     set -o pipefail
     if [ ! -f "packages.csv" ]; then
-        curl -LO "https://raw.githubusercontent.com/santilococo/CocoASAIS/master/packages.csv" > /dev/null 2>&1
+        curl -LO "https://raw.githubusercontent.com/santilococo/CocoASAIS/master/packages.csv" 2>&1 | debug
     fi
     local IFS=,
     while read -r NAME IMPORTANT INSTALL; do
@@ -242,7 +242,7 @@ setRootPassword() {
 updateMirrors() {
     whiptail --yesno "Would you like to update your mirrors by choosing your closest countries?" 0 0 || return
     runInChroot "cp /etc/pacman.d/mirrorlist /etc/pacman.d/mirrorlist.backup"
-    runInChroot "curl -o /etc/pacman.d/mirrorlist.pacnew https://archlinux.org/mirrorlist/all/" > /dev/null 2>&1
+    runInChroot "curl -o /etc/pacman.d/mirrorlist.pacnew https://archlinux.org/mirrorlist/all/" 2>&1 | debug
     local IFS=$'\n'
     setDelimiters "" "OFF"
     formatOptions $(cat /mnt/etc/pacman.d/mirrorlist.pacnew | grep '^##' | cut -d' ' -f2- | sed -n '5~1p')
