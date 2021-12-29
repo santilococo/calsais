@@ -271,7 +271,7 @@ ${1}
 EOF
     chmod 755 /mnt/cocoScript
     arch-chroot /mnt /cocoScript
-    rm /mnt/cocoScript
+    return $?
 }
 
 installNotImportantPackages() {
@@ -282,6 +282,7 @@ installNotImportantPackages() {
 }
 
 finishInstallation() {
+    rm /mnt/cocoScript
     umount -R /mnt
     whiptail --yesno "Finally, the PC needs to restart, would you like to do it?" 0 0
     if [ $? -eq 0 ]; then
