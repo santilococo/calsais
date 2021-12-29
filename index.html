@@ -117,19 +117,21 @@ debug() {
 installPackage() {
     calcWidthAndRun "whiptail --infobox \"Installing '$1'.\" 7 WIDTH"
     case ${2} in
-        Y)  
-            if [ -z $username ]; then
-                whiptail --msgbox "Important packages cannot be installed with paru." 0 0
-                logStep "${3}"
-                exit 1
-            fi
-            runInChroot "sudo -u $username paru -S --needed --noconfirm --skipreview ${1}" 2>&1 | debug
-            ;;
-        N)  
+        A)  
             pacstrap /mnt --needed ${1} 2>&1 | debug
             ;;
+        B)
+            runInChroot "pacman -Q ${1}" 2>&1 | debug
+            [ $? -eq 0 ] && return
+            runInChroot "pacman -S --needed --noconfirm ${1}" 2>&1 | debug
+            ;;
+        C)  
+            runInChroot "sudo -u $username paru -Q ${1}" 2>&1 | debug
+            [ $? -eq 0 ] && return
+            runInChroot "sudo -u $username paru -S --needed --noconfirm --skipreview ${1}" 2>&1 | debug
+            ;;
         ?)
-            whiptail --msgbox "AUR must be Y or N in packages.csv file." 0 0
+            whiptail --msgbox "INSTALL must be A, B or C in packages.csv file." 0 0
             logStep "${3}"
             exit 1
             ;;
@@ -151,9 +153,9 @@ getThePackages() {
         curl -LO "https://raw.githubusercontent.com/santilococo/CocoASAIS/master/packages.csv" > /dev/null 2>&1
     fi
     local IFS=,
-    while read -r NAME IMPORTANT AUR; do
+    while read -r NAME IMPORTANT INSTALL; do
         if [ "$IMPORTANT" = "${1}" ]; then
-            installPackage "$NAME" "$AUR" "${2}"
+            installPackage "$NAME" "$INSTALL" "${2}"
         fi
     done < packages.csv
     set +o pipefail
