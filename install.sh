@@ -315,20 +315,16 @@ finishInstallation() {
     fi
 }
 
-installLastPrograms() {
-    sudo pacman -Sy
+getDotfiles() {
     sh -c "$(curl -fsSL https://raw.github.com/ohmyzsh/ohmyzsh/master/tools/install.sh)"
     git clone https://github.com/romkatv/powerlevel10k.git $ZSH_CUSTOM/themes/powerlevel10k
-}
-
-getDotfiles() {
-    installLastPrograms
     local lastFolder=$(pwd -P)
     cd $HOME/Documents
     git clone https://github.com/santilococo/CocoRice.git
     cd CocoRice
     sh scripts/bootstrap.sh -w
     cd $lastFolder
+    sudo pacman -Sy zaread-git
 }
 
 steps=(
