@@ -205,9 +205,13 @@ networkConf() {
 
 calcWidthAndRun() {
     width=$(echo "$@" | grep -oP '(?<=").*?(?=")' | wc -c)
-    toReturn=$(eval $(echo "$@" | sed "s/WIDTH/$((${width}+8))/g"))
+    comm=$(echo "$@" | sed "s/WIDTH/$((${width}+8))/g")
+    if [[ $comm != *"3>&1 1>&2 2>&3" ]]; then
+        comm="${comm} 3>&1 1>&2 2>&3"
+    fi
+    commOutput=$(eval $comm)
     exitStatus=$?
-    echo $toReturn
+    [ ! -z $commOutput ] && echo $commOutput
     return $exitStatus
 }
 
@@ -219,9 +223,13 @@ calcHeightAndRun() {
         x = (($1 - $2 + ($2 * 60)) / 60)
         printf "%d", (x == int(x)) ? x : int(x) + 1
     }')
-    toReturn=$(eval $(echo "$@" | sed "s/HEIGHT/$((5+$height))/g"))
+    comm=$(echo "$@" | sed "s/HEIGHT/$((5+$height))/g")
+    if [[ $comm != *"3>&1 1>&2 2>&3" ]]; then
+        toRun="${comm} 3>&1 1>&2 2>&3"
+    fi
+    commOutput=$(eval $comm)
     exitStatus=$?
-    echo $toReturn
+    [ ! -z $commOutput ] && echo $commOutput
     return $exitStatus
 }
 
