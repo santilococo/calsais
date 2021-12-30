@@ -205,7 +205,10 @@ networkConf() {
 
 calcWidthAndRun() {
     width=$(echo "$@" | grep -oP '(?<=").*?(?=")' | wc -c)
-    echo $(eval $(echo "$@" | sed "s/WIDTH/$((${width}+8))/g"))
+    toReturn=$(eval $(echo "$@" | sed "s/WIDTH/$((${width}+8))/g"))
+    exitStatus=$?
+    echo $toReturn
+    return $exitStatus
 }
 
 calcHeightAndRun() {
@@ -216,7 +219,10 @@ calcHeightAndRun() {
         x = (($1 - $2 + ($2 * 60)) / 60)
         printf "%d", (x == int(x)) ? x : int(x) + 1
     }')
-    echo $(eval $(echo "$@" | sed "s/HEIGHT/$((5+$height))/g"))
+    toReturn=$(eval $(echo "$@" | sed "s/HEIGHT/$((5+$height))/g"))
+    exitStatus=$?
+    echo $toReturn
+    return $exitStatus
 }
 
 askForPassword() {
