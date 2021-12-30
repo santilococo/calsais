@@ -298,7 +298,7 @@ EOF
 
 installNotImportantPackages() {
     calcHeightAndRun "whiptail --msgbox \"Now, we will install a few more packages (in the background). Press OK and wait (it may take some time).\" HEIGHT 60 3>&1 1>&2 2>&3"
-    loadUsername
+    [ -z $username ] && loadUsername
     checkForParu
     getThePackages "N" "installNotImportantPackages"
     runInChroot "sed -i 's/^%wheel ALL=(ALL) NOPASSWD: ALL/# %wheel ALL=(ALL) NOPASSWD: ALL/' /etc/sudoers"
