@@ -257,8 +257,16 @@ grubSetUp() {
     runInChroot "grub-install --target=x86_64-efi --efi-directory=/boot/efi --bootloader-id=GRUB; grub-mkconfig -o /boot/grub/grub.cfg" > /dev/null 2>&1
 }
 
+saveUsername() {
+    echo $username > CocoASAIS.vars
+}
+
+loadUsername() {
+    username=$(cat CocoASAIS.vars)
+}
+
 userSetUp() {
-    export username=$(whiptail --inputbox "Enter the new username." 0 0 3>&1 1>&2 2>&3)
+    username=$(whiptail --inputbox "Enter the new username." 0 0 3>&1 1>&2 2>&3) && saveUsername
     exitIfCancel "You must enter an username." "userSetUp"
     askForPassword "${username}" "userSetUp"
     runInChroot "useradd -m ${username};echo "${username}:${password}" | chpasswd; sed -i 's/# %wheel ALL=(ALL) ALL/%wheel ALL=(ALL) ALL/' /etc/sudoers; usermod -aG wheel ${username}"
@@ -276,6 +284,7 @@ EOF
 
 installNotImportantPackages() {
     calcHeightAndRun "whiptail --msgbox \"Now, we will install a few more packages (in the background). Press OK and wait (it may take some time).\" HEIGHT 60 3>&1 1>&2 2>&3"
+    loadUsername
     checkForParu
     getThePackages "N" "installNotImportantPackages"
     runInChroot "sed -i 's/^%wheel ALL=(ALL) NOPASSWD: ALL/# %wheel ALL=(ALL) NOPASSWD: ALL/' /etc/sudoers"
