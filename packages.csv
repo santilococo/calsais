@@ -3,6 +3,7 @@ base,Y,A
 base-devel,Y,A
 linux,Y,A
 linux-firmware,Y,A
+libxft-bgra,N,C
 alacritty,N,B
 alsa-utils,Y,B
 bc,N,B
@@ -123,7 +124,6 @@ ferdi-bin,N,C
 foxitreader,N,C
 fsearch,N,C
 jetbrains-toolbox,N,C
-libxft-bgra,N,C
 mutt-wizard-git,N,C
 noisetorch,N,C
 nvimpager-git,N,C
