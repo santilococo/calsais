@@ -316,8 +316,6 @@ finishInstallation() {
 }
 
 getDotfiles() {
-    sh -c "$(curl -fsSL https://raw.github.com/ohmyzsh/ohmyzsh/master/tools/install.sh)"
-    git clone https://github.com/romkatv/powerlevel10k.git $ZSH_CUSTOM/themes/powerlevel10k
     local lastFolder=$(pwd -P)
     cd $HOME/Documents
     git clone https://github.com/santilococo/CocoRice.git
@@ -325,6 +323,8 @@ getDotfiles() {
     sh scripts/bootstrap.sh -w
     cd $lastFolder
     sudo pacman -Sy zaread-git
+    "$(curl -fsSL https://raw.github.com/ohmyzsh/ohmyzsh/master/tools/install.sh)"
+    git clone https://github.com/romkatv/powerlevel10k.git $ZSH_CUSTOM/themes/powerlevel10k
 }
 
 steps=(
