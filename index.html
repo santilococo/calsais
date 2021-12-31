@@ -334,7 +334,8 @@ getDotfiles() {
     cd $lastFolder
 
     sudo rm -f ~/.bashrc /usr/bin/CocoASAIS
-    sudo paru -Sy zaread-git 2>&1 | debug
+    calcWidthAndRun "whiptail --infobox \"Installing 'zaread-git'.\" 7 WIDTH"
+    paru -Sy zaread-git 2>&1 | debug
     chsh -s $(which zsh)
     logout
 }
