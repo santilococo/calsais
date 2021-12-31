@@ -317,15 +317,20 @@ finishInstallation() {
     fi
 }
 
-getDotfiles() {
+zshConfig() {
     sh -c "$(curl -fsSL https://raw.github.com/ohmyzsh/ohmyzsh/master/tools/install.sh)" "" --unattended 2>&1 | debug
+    touch $HOME/.cache/zsh/.histfile
     git clone https://github.com/romkatv/powerlevel10k.git $HOME/.oh-my-zsh/custom/themes/powerlevel10k 2>&1 | debug
+}
+
+getDotfiles() {
     local lastFolder=$(pwd -P)
     cd $HOME/Documents
     git clone https://github.com/santilococo/CocoRice.git 2>&1 | debug
     cd CocoRice
     sh scripts/bootstrap.sh -w
     cd $lastFolder
+
     rm ~/.bashrc /usr/bin/CocoASAIS
     sudo paru -Sy zaread-git
 }
