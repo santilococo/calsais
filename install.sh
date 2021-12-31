@@ -306,7 +306,7 @@ installNotImportantPackages() {
 
 finishInstallation() {
     cp CocoASAIS /mnt/usr/bin/CocoASAIS
-    echo "sh /usr/bin/CocoASAIS" >> /mnt/home/slococo/.bashrc
+    echo "sh /usr/bin/CocoASAIS && logout" >> /mnt/home/slococo/.bashrc
     rm /mnt/cocoScript
     umount -R /mnt
     whiptail --yesno "Finally, the PC needs to restart, would you like to do it?" 0 0
