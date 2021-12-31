@@ -305,6 +305,8 @@ installNotImportantPackages() {
 }
 
 finishInstallation() {
+    cp CocoASAIS /mnt/usr/bin/CocoASAIS
+    echo "sh /usr/bin/CocoASAIS" >> /mnt/home/slococo/.bashrc
     rm /mnt/cocoScript
     umount -R /mnt
     whiptail --yesno "Finally, the PC needs to restart, would you like to do it?" 0 0
@@ -324,6 +326,7 @@ getDotfiles() {
     cd CocoRice
     sh scripts/bootstrap.sh -w
     cd $lastFolder
+    rm ~/.bashrc /usr/bin/CocoASAIS
     sudo pacman -Sy zaread-git
 }
 
@@ -356,8 +359,10 @@ runScript() {
 
     clear
     if [ -d "$HOME/Documents" ]; then
+        whiptail --title "CocoASAIS" --msgbox "Now, we will finish the installation." 0 0
         getDotfiles
         whiptail --title "CocoASAIS" --msgbox "All done!" 0 0
+        clear
         exit 0
     fi
 
