@@ -225,7 +225,7 @@ calcHeightAndRun() {
     }')
     comm=$(echo "$@" | sed "s/HEIGHT/$((5+$height))/g")
     if [[ $comm != *"3>&1 1>&2 2>&3" ]]; then
-        toRun="${comm} 3>&1 1>&2 2>&3"
+        comm="${comm} 3>&1 1>&2 2>&3"
     fi
     commOutput=$(eval $comm)
     exitStatus=$?
@@ -333,8 +333,10 @@ getDotfiles() {
     sh scripts/bootstrap.sh -w
     cd $lastFolder
 
-    rm ~/.bashrc /usr/bin/CocoASAIS
+    sudo rm -f ~/.bashrc /usr/bin/CocoASAIS
     sudo paru -Sy zaread-git 2>&1 | debug
+    chsh -s $(which zsh)
+    logout
 }
 
 steps=(
@@ -366,7 +368,7 @@ runScript() {
 
     clear
     if [ -d "$HOME/Documents" ]; then
-        whiptail --title "CocoASAIS" --msgbox "Now, we will finish the installation." 0 0
+        whiptail --title "CocoASAIS" --msgbox "Now, we will finish the installation. Press OK and wait." 7 60
         getDotfiles
         whiptail --title "CocoASAIS" --msgbox "All done!" 0 0
         clear
