@@ -319,6 +319,7 @@ finishInstallation() {
 
 zshConfig() {
     sh -c "$(curl -fsSL https://raw.github.com/ohmyzsh/ohmyzsh/master/tools/install.sh)" "" --unattended 2>&1 | debug
+    mkdir -p $HOME/.cache/zsh
     touch $HOME/.cache/zsh/.histfile
     git clone https://github.com/romkatv/powerlevel10k.git $HOME/.oh-my-zsh/custom/themes/powerlevel10k 2>&1 | debug
 }
