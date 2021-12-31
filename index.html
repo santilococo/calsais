@@ -335,12 +335,13 @@ getDotfiles() {
 
     sudo rm -f ~/.bashrc /usr/bin/CocoASAIS
     calcWidthAndRun "whiptail --infobox \"Installing 'zaread-git'.\" 7 WIDTH"
+    set -o pipefail
     paru -Q zaread-git 2>&1 | debug
     if [ $? -eq 1 ]; then
         paru -S --needed --noconfirm --skipreview zaread-git 2>&1 | debug
     fi
+    set +o pipefail
     chsh -s $(which zsh)
-    logout
 }
 
 steps=(
