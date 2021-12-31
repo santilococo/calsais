@@ -324,6 +324,7 @@ zshConfig() {
 }
 
 getDotfiles() {
+    zshConfig
     local lastFolder=$(pwd -P)
     cd $HOME/Documents
     git clone https://github.com/santilococo/CocoRice.git 2>&1 | debug
@@ -332,7 +333,7 @@ getDotfiles() {
     cd $lastFolder
 
     rm ~/.bashrc /usr/bin/CocoASAIS
-    sudo paru -Sy zaread-git
+    sudo paru -Sy zaread-git 2>&1 | debug
 }
 
 steps=(
