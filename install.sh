@@ -318,7 +318,7 @@ finishInstallation() {
 }
 
 getDotfiles() {
-    "$(curl -fsSL https://raw.github.com/ohmyzsh/ohmyzsh/master/tools/install.sh)" 2>&1 | debug
+    sh -c "$(curl -fsSL https://raw.github.com/ohmyzsh/ohmyzsh/master/tools/install.sh)" "" --unattended 2>&1 | debug
     git clone https://github.com/romkatv/powerlevel10k.git $HOME/.oh-my-zsh/custom/themes/powerlevel10k 2>&1 | debug
     local lastFolder=$(pwd -P)
     cd $HOME/Documents
@@ -327,7 +327,7 @@ getDotfiles() {
     sh scripts/bootstrap.sh -w
     cd $lastFolder
     rm ~/.bashrc /usr/bin/CocoASAIS
-    sudo pacman -Sy zaread-git
+    sudo paru -Sy zaread-git
 }
 
 steps=(
