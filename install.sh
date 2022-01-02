@@ -58,7 +58,7 @@ partDisks() {
     if [ $? -eq 1 ]; then
         calcHeightAndRun "whiptail --msgbox \"You will partition the disk yourself with gdisk and then, when finished, you will continue with the installation.\" HEIGHT 62 3>&1 1>&2 2>&3"
         gdisk $disk
-        parts=$(lsblk /dev/sdb -nl | wc -l)
+        parts=$(lsblk $disk -nl | wc -l)
         if [ $parts -eq 1 ]; then
             whiptail --msgbox "You must at least create boot and root partitions." 0 0
             logStep "partDisks"
