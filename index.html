@@ -321,7 +321,7 @@ finishInstallation() {
 }
 
 zshConfig() {
-    # TODO: Install packages: zsh-theme-powerlevel10k-git and https://aur.archlinux.org/packages/oh-my-zsh-git/
+    # TODO: Choose between zsh-theme-powerlevel10k-git (AUR) and zsh-theme-powerlevel10k (community)
     sh -c "$(curl -fsSL https://raw.github.com/ohmyzsh/ohmyzsh/master/tools/install.sh)" "" --unattended 2>&1 | debug
     mkdir -p $HOME/.cache/zsh
     touch $HOME/.cache/zsh/.histfile
