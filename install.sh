@@ -146,6 +146,7 @@ checkForParu() {
     commOutput=$(runInChroot "command -v paru > /dev/null 2>&1 || echo 1")
     if [ "$commOutput" = "1" ]; then
         runInChroot "sed -i 's/# %wheel ALL=(ALL) NOPASSWD: ALL/%wheel ALL=(ALL) NOPASSWD: ALL/' /etc/sudoers"
+        [ -z $username ] && loadUsername
         runInChroot "cd /tmp; sudo -u $username git clone https://aur.archlinux.org/paru-bin.git; cd paru-bin; sudo -u $username makepkg -si --noconfirm; cd ..; rm -rf paru-bin" 2>&1 | debug
     fi
 }
@@ -299,13 +300,11 @@ EOF
     return $?
 }
 
-installNotImportantPackages() {
+installOtherPackages() {
     calcHeightAndRun "whiptail --msgbox \"Now, we will install a few more packages (in the background). Press OK and wait (it may take some time).\" HEIGHT 60 3>&1 1>&2 2>&3"
-    [ -z $username ] && loadUsername
-    # TODO: Add "S" packages that will be the ones that depend on locale: base-devel and git.
-    # getThePackages "S" "installNotImportantPackages"
+    getThePackages "S" "installOtherPackages"
     checkForParu
-    getThePackages "N" "installNotImportantPackages"
+    getThePackages "N" "installOtherPackages"
     runInChroot "sed -i 's/^%wheel ALL=(ALL) NOPASSWD: ALL/# %wheel ALL=(ALL) NOPASSWD: ALL/' /etc/sudoers"
 }
 
@@ -324,10 +323,9 @@ finishInstallation() {
 
 zshConfig() {
     # TODO: Choose between zsh-theme-powerlevel10k-git (AUR) and zsh-theme-powerlevel10k (community)
-    sh -c "$(curl -fsSL https://raw.github.com/ohmyzsh/ohmyzsh/master/tools/install.sh)" "" --unattended 2>&1 | debug
+    # sh -c "$(curl -fsSL https://raw.github.com/ohmyzsh/ohmyzsh/master/tools/install.sh)" "" --unattended 2>&1 | debug
     mkdir -p $HOME/.cache/zsh
     touch $HOME/.cache/zsh/.histfile
-    git clone https://github.com/romkatv/powerlevel10k.git $HOME/.oh-my-zsh/custom/themes/powerlevel10k 2>&1 | debug
 }
 
 getDotfiles() {
@@ -340,14 +338,14 @@ getDotfiles() {
     cd $lastFolder
 
     sudo rm -f ~/.bashrc /usr/bin/CocoASAIS
-    calcWidthAndRun "whiptail --infobox \"Installing 'zaread-git'.\" 7 WIDTH"
-    set -o pipefail
-    paru -Q zaread-git 2>&1 | debug
-    if [ $? -eq 1 ]; then
-        paru -S --needed --noconfirm --skipreview zaread-git 2>&1 | debug
-    fi
-    set +o pipefail
-    chsh -s $(which zsh)
+    # calcWidthAndRun "whiptail --infobox \"Installing 'zaread-git'.\" 7 WIDTH"
+    # set -o pipefail
+    # paru -Q zaread-git 2>&1 | debug
+    # if [ $? -eq 1 ]; then
+    #     paru -S --needed --noconfirm --skipreview zaread-git 2>&1 | debug
+    # fi
+    # set +o pipefail
+    # chsh -s $(which zsh)
 }
 
 steps=(
@@ -363,7 +361,7 @@ steps=(
     updateMirrors
     grubSetUp
     userSetUp
-    installNotImportantPackages
+    installOtherPackages
     finishInstallation
 )
 
