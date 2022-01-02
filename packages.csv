@@ -44,7 +44,7 @@ libimobiledevice,N,B
 libreoffice-still,N,B
 linux-headers,Y,B
 lxappearance,N,B
-man-pages,Y,B
+man-pages,N,B
 mpv,N,B
 nasm,N,B
 neofetch,N,B
@@ -56,9 +56,9 @@ nmap,N,B
 noto-fonts,N,B
 noto-fonts-emoji,N,B
 ntfs-3g,N,B
-nvidia,Y,B
-nvidia-settings,Y,B
-nvidia-utils,Y,B
+nvidia,N,B
+nvidia-settings,N,B
+nvidia-utils,N,B
 obs-studio,N,B
 octave,N,B
 openssh,N,B
