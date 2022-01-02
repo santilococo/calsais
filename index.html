@@ -37,7 +37,7 @@ exitIfCancel() {
             x = (($1 - $2 + ($2 * 60)) / 60)
             printf "%d", (x == int(x)) ? x : int(x) + 1
         }')
-        whiptail --msgbox "$str" $((5+$height)) 60
+        whiptail --msgbox "$str" $((5+height)) 60
         echo "${2}" > CocoASAIS.log
         exit 1
     fi
@@ -106,13 +106,13 @@ mountPart() {
 }
 
 debug() {
-    while read input; do
+    while read -r input; do
         if [ $debugFlag = true ]; then
-            echo $input
+            echo "$input"
         elif [ $debugFlagToFile = true ]; then
-            echo $input >> CocoASAIS.debug
+            echo "$input" >> CocoASAIS.debug
         else
-            echo $input > /dev/null 2>&1
+            echo "$input" > /dev/null 2>&1
         fi
     done
 }
@@ -208,7 +208,7 @@ networkConf() {
 
 calcWidthAndRun() {
     width=$(echo "$@" | grep -oP '(?<=").*?(?=")' | wc -c)
-    comm=$(echo "$@" | sed "s/WIDTH/$((${width}+8))/g")
+    comm=$(echo "$@" | sed "s/WIDTH/$((width+8))/g")
     if [[ $comm != *"3>&1 1>&2 2>&3" ]]; then
         comm="${comm} 3>&1 1>&2 2>&3"
     fi
@@ -220,13 +220,13 @@ calcWidthAndRun() {
 
 calcHeightAndRun() {
     str=$(echo "$@" | grep -oP '(?<=").*?(?=")')
-    newlines=$(printf "$str" | grep -c $'\n')
+    newlines=$(printf '%s' "$str" | grep -c $'\n')
     chars=$(echo "$str" | wc -c)
     height=$(echo "$chars" "$newlines" | awk '{
         x = (($1 - $2 + ($2 * 60)) / 60)
         printf "%d", (x == int(x)) ? x : int(x) + 1
     }')
-    comm=$(echo "$@" | sed "s/HEIGHT/$((5+$height))/g")
+    comm=$(echo "$@" | sed "s/HEIGHT/$((5+height))/g")
     if [[ $comm != *"3>&1 1>&2 2>&3" ]]; then
         comm="${comm} 3>&1 1>&2 2>&3"
     fi
@@ -252,7 +252,7 @@ askForPassword() {
 
 setRootPassword() {
     askForPassword "root" "setRootPassword"
-    runInChroot "echo "root:${password}" | chpasswd" 2>&1 | debug
+    runInChroot "echo \"root:${password}\" | chpasswd" 2>&1 | debug
     unset password
 }
 
@@ -266,7 +266,7 @@ updateMirrors() {
     countries=$(whiptail --title "Countries" --checklist "" 0 0 0 "${options[@]}" 3>&1 1>&2 2>&3)
     exitIfCancel "You must select at least one country." "updateMirrors"
     countriesFmt=$(echo "$countries" | sed -r 's/" "/,/g')
-    runInChroot "sudo reflector --country "${countriesFmt//\"/}" --protocol https --sort rate --save /etc/pacman.d/mirrorlist" 2>&1 | debug
+    runInChroot "sudo reflector --country \"${countriesFmt//\"/}\" --protocol https --sort rate --save /etc/pacman.d/mirrorlist" 2>&1 | debug
 }
 
 grubSetUp() {
@@ -286,7 +286,7 @@ userSetUp() {
     username=$(whiptail --inputbox "Enter the new username." 0 0 3>&1 1>&2 2>&3) && saveUsername
     exitIfCancel "You must enter an username." "userSetUp"
     askForPassword "${username}" "userSetUp"
-    runInChroot "useradd -m ${username};echo "${username}:${password}" | chpasswd; sed -i 's/# %wheel ALL=(ALL) ALL/%wheel ALL=(ALL) ALL/' /etc/sudoers; usermod -aG wheel ${username}"
+    runInChroot "useradd -m ${username};echo \"${username}:${password}\" | chpasswd; sed -i 's/# %wheel ALL=(ALL) ALL/%wheel ALL=(ALL) ALL/' /etc/sudoers; usermod -aG wheel ${username}"
     unset password
 }
 
@@ -302,6 +302,8 @@ EOF
 installNotImportantPackages() {
     calcHeightAndRun "whiptail --msgbox \"Now, we will install a few more packages (in the background). Press OK and wait (it may take some time).\" HEIGHT 60 3>&1 1>&2 2>&3"
     [ -z $username ] && loadUsername
+    # TODO: Add "S" packages that will be the ones that depend on locale: base-devel and git.
+    # getThePackages "S" "installNotImportantPackages"
     checkForParu
     getThePackages "N" "installNotImportantPackages"
     runInChroot "sed -i 's/^%wheel ALL=(ALL) NOPASSWD: ALL/# %wheel ALL=(ALL) NOPASSWD: ALL/' /etc/sudoers"
@@ -369,7 +371,7 @@ runScript() {
     debugFlag=false; debugFlagToFile=false
     while getopts ':hdf' flag; do
         case $flag in
-            h)  printf "usage: ${0##*/} [command]\n\t-h\tPrint this help message.\n\t-d\tDebug to stdout.\n\t-d\tDebug to CocoASAIS.debug file.\n" && exit 0 ;;
+            h)  printf 'usage: %s [command]\n\t-h\tPrint this help message.\n\t-d\tDebug to stdout.\n\t-d\tDebug to CocoASAIS.debug file.\n' "${0##*/}" && exit 0 ;;
             d)  debugFlag=true ;;
             f)  debugFlagToFile=true ;;
             ?)  printf '%s: invalid option -''%s'\\n "${0##*/}" "$OPTARG" && exit 1 ;;
@@ -389,7 +391,7 @@ runScript() {
     if [ -f "CocoASAIS.log" ]; then
         lastStep=$(cat CocoASAIS.log)
         for item in "${steps[@]}"; do
-            if [ $item = "$lastStep" ]; then
+            if [ "$item" = "$lastStep" ]; then
                 found=true
                 break
             fi
@@ -414,4 +416,4 @@ runScript() {
     done
 }
 
-runScript $@
+runScript "$@"
