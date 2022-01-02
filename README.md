@@ -21,7 +21,7 @@ and then
 sh CocoASAIS
 ```
 
-You can use `-d` or `-f`...
+You can use `-d` or `-f` to debug.
 
 ## Contributing <a name="contributing"></a>
 PRs are welcome.
