@@ -44,6 +44,7 @@ exitIfCancel() {
 }
 
 partDisks() {
+    calcHeightAndRun "whiptail --msgbox \"First, you need to choose a disk that you will later decide to partition/format automatically or manually.\" HEIGHT 60 3>&1 1>&2 2>&3"
     local IFS=$'\n'
     setDelimiters ""
     formatOptions $(lsblk -dpnlo NAME,SIZE -e 7,11)
@@ -55,7 +56,7 @@ partDisks() {
     # TODO: Add swapfile as an alternative to swap partition
     whiptail --yesno "Do you want me to automatically partition and format the disk for you?" 0 0
     if [ $? -eq 1 ]; then
-        whiptail --msgbox "You will partition the disk yourself with gdisk and then, when finished, you will continue with the installation." 0 0
+        calcHeightAndRun "whiptail --msgbox \"You will partition the disk yourself with gdisk and then, when finished, you will continue with the installation.\" HEIGHT 62 3>&1 1>&2 2>&3"
         gdisk $disk
         # TODO: Ask for home partition
         formatOptions $(lsblk ${disk} -pnlo NAME,SIZE,MOUNTPOINTS | sed -n '2~1p')
