@@ -399,7 +399,13 @@ runScript() {
         fi
     fi
 
-    whiptail --title "CocoASAIS" --msgbox "Welcome to CocoASAIS!" 0 0
+    if [ $i -gt 0 ]; then
+        welcomeMsg="Welcome back to CocoASAIS!"
+    else
+        welcomeMsg="Welcome to CocoASAIS!"
+    fi
+
+    whiptail --title "CocoASAIS" --msgbox "${welcomeMsg}" 0 0
 
     while [ $i -le "${#steps[@]}" ]; do
         ${steps[$i]}
