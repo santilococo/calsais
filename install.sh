@@ -18,9 +18,7 @@ logStep() {
 checkUefi() {
     ls /sys/firmware/efi/efivars > /dev/null 2>&1
     if [ $? -ge 1 ]; then
-        whiptail --msgbox "This scripts supports only UEFI boot mode." 0 0
-        logStep "checkUefi"
-        exit 1
+        logAndExit "This scripts supports only UEFI boot mode." "checkUefi"
     fi
 }
 
@@ -28,18 +26,22 @@ updateSystemClock() {
     timedatectl set-ntp true
 }
 
+logAndExit() {
+    str="${1} Therefore, the installation process will stop, but you can continue where you left off by running:\n\nsh CocoASAIS"
+    newlines=$(printf "$str" | grep -c $'\n')
+    chars=$(echo "$str" | wc -c)
+    height=$(echo "$chars" "$newlines" | awk '{
+        x = (($1 - $2 + ($2 * 60)) / 60)
+        printf "%d", (x == int(x)) ? x : int(x) + 1
+    }')
+    whiptail --msgbox "$str" $((5+height)) 60
+    echo "${2}" > CocoASAIS.log
+    exit 1
+}
+
 exitIfCancel() {
     if [ $? -eq 1 ]; then
-        str="${1} Therefore, the installation process will stop, but you can continue where you left off by running:\n\nsh CocoASAIS"
-        newlines=$(printf "$str" | grep -c $'\n')
-        chars=$(echo "$str" | wc -c)
-        height=$(echo "$chars" "$newlines" | awk '{
-            x = (($1 - $2 + ($2 * 60)) / 60)
-            printf "%d", (x == int(x)) ? x : int(x) + 1
-        }')
-        whiptail --msgbox "$str" $((5+height)) 60
-        echo "${2}" > CocoASAIS.log
-        exit 1
+        logAndExit "$@"
     fi
 }
 
@@ -59,11 +61,8 @@ partDisks() {
         calcHeightAndRun "whiptail --msgbox \"You will partition the disk yourself with gdisk and then, when finished, you will continue with the installation.\" HEIGHT 62 3>&1 1>&2 2>&3"
         gdisk $disk
         parts=$(lsblk $disk -nl | wc -l)
-        if [ $parts -eq 1 ]; then
-            whiptail --msgbox "You must at least create boot and root partitions." 0 0
-            logStep "partDisks"
-            exit 1
-        fi
+        [ $parts -eq 1 ] && logAndExit "You must at least create boot and root partitions." "partDisks"
+
         # TODO: Ask for home partition
         formatOptions $(lsblk ${disk} -pnlo NAME,SIZE,MOUNTPOINTS | sed -n '2~1p')
         result=$(whiptail --title "Select the boot partition." --menu "" 0 0 0 "${options[@]}" 3>&1 1>&2 2>&3)
@@ -140,9 +139,7 @@ installPackage() {
             runInChroot "sudo -u $username paru -S --needed --noconfirm --skipreview ${1}" 2>&1 | debug
             ;;
         ?)
-            whiptail --msgbox "INSTALL must be A, B or C in packages.csv file." 0 0
-            logStep "${3}"
-            exit 1
+            logAndExit "INSTALL must be A, B or C in packages.csv file." "${3}"
             ;;
     esac
     exitIfCancel "Package installation failed." "${3}"
