@@ -83,25 +83,25 @@ partDisks() {
 }
 
 autoPart() {
-    parted -s $disk mklabel gpt 2> /dev/null
+    parted -s $disk mklabel gpt 2>&1 | debug
 
-    sgdisk $disk -n=1:0:+300M -t=1:ef00 > /dev/null
-    sgdisk $disk -n=2:0:+1024M -t=2:8200 > /dev/null
-    sgdisk $disk -n=3:0:0 > /dev/null
+    sgdisk $disk -n=1:0:+300M -t=1:ef00 2>&1 | debug
+    sgdisk $disk -n=2:0:+1024M -t=2:8200 2>&1 | debug
+    sgdisk $disk -n=3:0:0 2>&1 | debug
 }
 
 formatPart() {
-    mkfs.fat -F 32 "$bootPart" > /dev/null 2>&1
-    mkswap "$swapPart" > /dev/null 2>&1
-    mkfs.ext4 "$rootPart" > /dev/null 2>&1
+    mkfs.fat -F 32 "$bootPart" 2>&1 | debug
+    mkswap "$swapPart" 2>&1 | debug
+    mkfs.ext4 "$rootPart" 2>&1 | debug
 }
 
 mountPart() {
-    mount "$rootPart" /mnt > /dev/null
+    mount "$rootPart" /mnt 2>&1 | debug
     mkdir -p /mnt/boot/efi 
     # TODO: Ask where to mount the bootPart
-    mount "$bootPart" /mnt/boot/efi > /dev/null
-    swapon "$swapPart" > /dev/null
+    mount "$bootPart" /mnt/boot/efi 2>&1 | debug
+    swapon "$swapPart" 2>&1 | debug
 }
 
 debug() {
@@ -140,7 +140,7 @@ installPackage() {
 }
 
 checkForParu() {
-    commOutput=$(runInChroot "command -v paru  > /dev/null 2>&1 || echo 1")
+    commOutput=$(runInChroot "command -v paru > /dev/null 2>&1 || echo 1")
     if [ "$commOutput" = "1" ]; then
         runInChroot "sed -i 's/# %wheel ALL=(ALL) NOPASSWD: ALL/%wheel ALL=(ALL) NOPASSWD: ALL/' /etc/sudoers"
         runInChroot "cd /tmp; sudo -u $username git clone https://aur.archlinux.org/paru-bin.git; cd paru-bin; sudo -u $username makepkg -si --noconfirm; cd ..; rm -rf paru-bin" 2>&1 | debug
@@ -164,7 +164,7 @@ getThePackages() {
 installImportantPackages() {
     calcHeightAndRun "whiptail --msgbox \"We will start by installing some important packages in the background. Please press OK and wait.\" HEIGHT 60 3>&1 1>&2 2>&3"
     getThePackages "Y" "installImportantPackages"
-    runInChroot "systemctl enable NetworkManager; systemctl enable fstrim.timer" 2> /dev/null
+    runInChroot "systemctl enable NetworkManager; systemctl enable fstrim.timer" 2>&1 | debug
 }
 
 generateFstab() {
@@ -188,7 +188,7 @@ setTimeZone() {
 setLocale() {
     # TODO: Let the user choose a locale
     sed 's/#en_US.UTF-8 UTF-8/en_US.UTF-8 UTF-8/' -i /etc/locale.gen
-    runInChroot "locale-gen"
+    runInChroot "locale-gen" 2>&1 | debug
     echo "LANG=en_US.UTF-8" > /etc/locale.conf
 }
 
@@ -249,7 +249,7 @@ askForPassword() {
 
 setRootPassword() {
     askForPassword "root" "setRootPassword"
-    runInChroot "echo "root:${password}" | chpasswd"
+    runInChroot "echo "root:${password}" | chpasswd" 2>&1 | debug
     unset password
 }
 
@@ -263,12 +263,12 @@ updateMirrors() {
     countries=$(whiptail --title "Countries" --checklist "" 0 0 0 "${options[@]}" 3>&1 1>&2 2>&3)
     exitIfCancel "You must select at least one country." "updateMirrors"
     countriesFmt=$(echo "$countries" | sed -r 's/" "/,/g')
-    runInChroot "sudo reflector --country "${countriesFmt//\"/}" --protocol https --sort rate --save /etc/pacman.d/mirrorlist"
+    runInChroot "sudo reflector --country "${countriesFmt//\"/}" --protocol https --sort rate --save /etc/pacman.d/mirrorlist" 2>&1 | debug
 }
 
 grubSetUp() {
     # TODO: Prompt user for efi-directory
-    runInChroot "grub-install --target=x86_64-efi --efi-directory=/boot/efi --bootloader-id=GRUB; grub-mkconfig -o /boot/grub/grub.cfg" > /dev/null 2>&1
+    runInChroot "grub-install --target=x86_64-efi --efi-directory=/boot/efi --bootloader-id=GRUB; grub-mkconfig -o /boot/grub/grub.cfg" 2>&1 | debug
 }
 
 saveUsername() {
@@ -309,7 +309,7 @@ finishInstallation() {
     echo "sh /usr/bin/CocoASAIS && logout" >> /mnt/home/slococo/.bashrc
     rm /mnt/cocoScript
     umount -R /mnt
-    whiptail --yesno "Finally, the PC needs to restart, would you like to do it?" 0 0
+    whiptail --yesno "Finally, the PC needs to restart, would you like to restart now?" 0 0
     if [ $? -eq 0 ]; then
         reboot
     else 
@@ -318,6 +318,7 @@ finishInstallation() {
 }
 
 zshConfig() {
+    # TODO: Install packages: zsh-theme-powerlevel10k-git and https://aur.archlinux.org/packages/oh-my-zsh-git/
     sh -c "$(curl -fsSL https://raw.github.com/ohmyzsh/ohmyzsh/master/tools/install.sh)" "" --unattended 2>&1 | debug
     mkdir -p $HOME/.cache/zsh
     touch $HOME/.cache/zsh/.histfile
