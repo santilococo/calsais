@@ -46,18 +46,18 @@ exitIfCancel() {
 }
 
 partDisks() {
-    calcHeightAndRun "whiptail --msgbox \"First, you need to choose a disk that you will later decide to partition/format automatically or manually.\" HEIGHT 60 3>&1 1>&2 2>&3"
+    # TODO: Add swapfile as an alternative to swap partition
+    whiptail --yesno "Do you want me to automatically partition and format a disk for you?" 0 0
+    whipStatus=$?
+
     local IFS=$'\n'
     setDelimiters ""
     formatOptions $(lsblk -dpnlo NAME,SIZE -e 7,11)
-    
-    result=$(whiptail --title "Select a disk." --menu "" 0 0 0 "${options[@]}" 3>&1 1>&2 2>&3)
+    result=$(whiptail --title "Select the disk." --menu "" 0 0 0 "${options[@]}" 3>&1 1>&2 2>&3)
     exitIfCancel "You must select a disk." "partDisks"
     disk=$(echo $result | cut -d' ' -f1)
 
-    # TODO: Add swapfile as an alternative to swap partition
-    whiptail --yesno "Do you want me to automatically partition and format the disk for you?" 0 0
-    if [ $? -eq 1 ]; then
+    if [ $whipStatus -eq 1 ]; then
         calcHeightAndRun "whiptail --msgbox \"You will partition the disk yourself with gdisk and then, when finished, you will continue with the installation.\" HEIGHT 62 3>&1 1>&2 2>&3"
         gdisk $disk
         parts=$(lsblk $disk -nl | wc -l)
@@ -68,11 +68,14 @@ partDisks() {
         result=$(whiptail --title "Select the boot partition." --menu "" 0 0 0 "${options[@]}" 3>&1 1>&2 2>&3)
         exitIfCancel "You must select the boot partition." "partDisks"
         bootPart=$(echo $result | cut -d' ' -f1)
+        formatOptions $(lsblk ${disk} -pnlo NAME,SIZE,MOUNTPOINTS | sed -n '2~1p' | awk '$0!~v' v="$bootPart")
         result=$(whiptail --title "Select the root partition." --menu "" 0 0 0 "${options[@]}" 3>&1 1>&2 2>&3)
         exitIfCancel "You must select the root partition." "partDisks"
         rootPart=$(echo $result | cut -d' ' -f1)
+
         whiptail --yesno "Do you have a swap partition?" 0 0
         if [ $? -eq 0 ]; then
+            formatOptions $(lsblk ${disk} -pnlo NAME,SIZE,MOUNTPOINTS | sed -n '2~1p' | awk '$0!~v' v="$bootPart|$rootPart")
             result=$(whiptail --title "Select the swap partition." --menu "" 0 0 0 "${options[@]}" 3>&1 1>&2 2>&3)
             exitIfCancel "You must select the swap partition." "partDisks"
             swapPart=$(echo $result | cut -d' ' -f1)
