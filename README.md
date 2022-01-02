@@ -23,6 +23,8 @@ sh CocoASAIS
 
 You can use `-d` or `-f` to debug.
 
+The script only supports UEFI boot mode.
+
 ## Contributing <a name="contributing"></a>
 PRs are welcome.
 
