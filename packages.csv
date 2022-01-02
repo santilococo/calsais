@@ -115,6 +115,7 @@ youtube-dl,N,B
 zathura,N,B
 zathura-pdf-mupdf,N,B
 zsh,Y,B
+zsh-theme-powerlevel10k,N,B
 ani-cli-git,N,C
 bashmount,N,C
 brave-bin,N,C
@@ -127,6 +128,7 @@ jetbrains-toolbox,N,C
 mutt-wizard-git,N,C
 noisetorch,N,C
 nvimpager-git,N,C
+oh-my-zsh-git,N,C
 orchis-theme-bin,N,C
 pam-gnupg,N,C
 pandoc-bin,N,C
@@ -139,3 +141,4 @@ tela-icon-theme-bin,N,C
 ttf-meslo-nerd-font-powerlevel10k,N,C
 v4l2loopback-dc-dkms,N,C
 visual-studio-code-bin,N,C
+zaread-git,N,C
