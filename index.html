@@ -46,7 +46,6 @@ exitIfCancel() {
 }
 
 partDisks() {
-    # TODO: Add swapfile as an alternative to swap partition
     whiptail --yesno "Do you want me to automatically partition and format a disk for you?" 0 0
     whipStatus=$?
 
@@ -60,8 +59,8 @@ partDisks() {
     if [ $whipStatus -eq 1 ]; then
         calcHeightAndRun "whiptail --msgbox \"You will partition the disk yourself with gdisk and then, when finished, you will continue with the installation.\" HEIGHT 62 3>&1 1>&2 2>&3"
         gdisk $disk
-        parts=$(lsblk $disk -nl | wc -l)
-        [ $parts -eq 1 ] && logAndExit "You must at least create boot and root partitions." "partDisks"
+        parts=$(lsblk $disk -pnl | sed -n '2~1p' | wc -l)
+        [ $parts -lt 2 ] && logAndExit "You must at least create boot and root partitions." "partDisks"
 
         # TODO: Ask for home partition
         formatOptions $(lsblk ${disk} -pnlo NAME,SIZE,MOUNTPOINTS | sed -n '2~1p')
@@ -73,35 +72,68 @@ partDisks() {
         exitIfCancel "You must select the root partition." "partDisks"
         rootPart=$(echo $result | cut -d' ' -f1)
 
-        whiptail --yesno "Do you have a swap partition?" 0 0
-        if [ $? -eq 0 ]; then
-            formatOptions $(lsblk ${disk} -pnlo NAME,SIZE,MOUNTPOINTS | sed -n '2~1p' | awk '$0!~v' v="$bootPart|$rootPart")
-            result=$(whiptail --title "Select the swap partition." --menu "" 0 0 0 "${options[@]}" 3>&1 1>&2 2>&3)
-            exitIfCancel "You must select the swap partition." "partDisks"
-            swapPart=$(echo $result | cut -d' ' -f1)
+        parts=$(lsblk $disk -pnl | sed -n '2~1p' | awk '$0!~v' v="$bootPart|$rootPart" | wc -l)
+        if [ $parts -gt 0 ]; then
+            whiptail --yesno "Do you have a swap partition?" 0 0
+            if [ $? -eq 0 ]; then
+                formatOptions $(lsblk ${disk} -pnlo NAME,SIZE,MOUNTPOINTS | sed -n '2~1p' | awk '$0!~v' v="$bootPart|$rootPart")
+                result=$(whiptail --title "Select the swap partition." --menu "" 0 0 0 "${options[@]}" 3>&1 1>&2 2>&3)
+                exitIfCancel "You must select the swap partition." "partDisks"
+                swapPart=$(echo $result | cut -d' ' -f1)
+            else
+                whiptail --yesno "Do you want a swapfile?" 0 0
+                [ $? -eq 0 ] && createSwapfile
+            fi
+        else
+            whiptail --yesno "Do you want a swapfile?" 0 0
+            [ $? -eq 0 ] && createSwapfile
         fi
     else
-        autoPart
         bootPart=${disk}1
-        swapPart=${disk}2
-        rootPart=${disk}3
+        rootPart=${disk}2
+
+        whiptail --yesno "Do you want to create a swap space?" 0 0
+        if [ $? -eq 0 ]; then
+            result=$(whiptail --title "Select the swap space." 0 0 0 "Partition" "" "Swapfile" "")
+            exitIfCancel "You must select a swap space." "partDisks"
+            if [ "$result" = "Partition" ]; then
+                swapPart=${disk}2
+                rootPart=${disk}3
+            else
+                createSwapfile
+            fi
+        fi
+
+        autoPart
     fi
 
     formatPart
     mountPart
 }
 
+createSwapfile() {
+    swapfile=/mnt/swapfile
+    dd if=/dev/zero of=$swapfile bs=1M count=512 status=progress
+    chmod 600 $swapfile
+    mkswap $swapfile
+    swapon $swapfile
+}
+
 autoPart() {
     parted -s $disk mklabel gpt 2>&1 | debug
 
     sgdisk $disk -n=1:0:+300M -t=1:ef00 2>&1 | debug
-    sgdisk $disk -n=2:0:+1024M -t=2:8200 2>&1 | debug
-    sgdisk $disk -n=3:0:0 2>&1 | debug
+    if [ -n "$swapPart" ]; then
+        sgdisk $disk -n=2:0:+1024M -t=2:8200 2>&1 | debug
+        sgdisk $disk -n=3:0:0 2>&1 | debug
+    else
+        sgdisk $disk -n=2:0:0 2>&1 | debug
+    fi
 }
 
 formatPart() {
     mkfs.fat -F 32 "$bootPart" 2>&1 | debug
-    mkswap "$swapPart" 2>&1 | debug
+    [ -n "$swapPart" ] && mkswap "$swapPart" 2>&1 | debug
     mkfs.ext4 "$rootPart" 2>&1 | debug
 }
 
@@ -110,7 +142,7 @@ mountPart() {
     mkdir -p /mnt/boot/efi 
     # TODO: Ask where to mount the bootPart
     mount "$bootPart" /mnt/boot/efi 2>&1 | debug
-    swapon "$swapPart" 2>&1 | debug
+    [ -n "$swapPart" ] && swapon "$swapPart" 2>&1 | debug
 }
 
 debug() {
@@ -179,6 +211,9 @@ installImportantPackages() {
 
 generateFstab() {
     genfstab -U /mnt > /mnt/etc/fstab
+    if [ -n "$swapfile" ]; then
+        echo "/swapfile none swap defaults 0 0" > /mnt/etc/fstab
+    fi
 }
 
 setTimeZone() {
