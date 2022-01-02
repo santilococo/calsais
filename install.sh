@@ -11,10 +11,6 @@ formatOptions() {
     done
 }
 
-logStep() {
-    echo ${1} > CocoASAIS.log
-}
-
 checkUefi() {
     ls /sys/firmware/efi/efivars > /dev/null 2>&1
     if [ $? -ge 1 ]; then
@@ -26,6 +22,10 @@ updateSystemClock() {
     timedatectl set-ntp true
 }
 
+logStep() {
+    echo ${1} > CocoASAIS.log
+}
+
 logAndExit() {
     str="${1} Therefore, the installation process will stop, but you can continue where you left off by running:\n\nsh CocoASAIS"
     newlines=$(printf "$str" | grep -c $'\n')
@@ -35,7 +35,7 @@ logAndExit() {
         printf "%d", (x == int(x)) ? x : int(x) + 1
     }')
     whiptail --msgbox "$str" $((5+height)) 60
-    echo "${2}" > CocoASAIS.log
+    logStep "${2}"
     exit 1
 }
 
