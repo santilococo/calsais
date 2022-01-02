@@ -108,6 +108,8 @@ debug() {
     while read input; do
         if [ $debugFlag = true ]; then
             echo $input
+        elif [ $debugFlagToFile = true ]; then
+            echo $input >> CocoASAIS.debug
         else
             echo $input > /dev/null 2>&1
         fi
@@ -363,11 +365,12 @@ steps=(
 )
 
 runScript() {
-    debugFlag=false
-    while getopts ':hd' flag; do
+    debugFlag=false; debugFlagToFile=false
+    while getopts ':hdf' flag; do
         case $flag in
-            h)  printf "usage: ${0##*/} [command]\n\t-h\tPrint this help message.\n\t-d\tDebug.\n" && exit 0 ;;
+            h)  printf "usage: ${0##*/} [command]\n\t-h\tPrint this help message.\n\t-d\tDebug to stdout.\n\t-d\tDebug to CocoASAIS.debug file.\n" && exit 0 ;;
             d)  debugFlag=true ;;
+            f)  debugFlagToFile=true ;;
             ?)  printf '%s: invalid option -''%s'\\n "${0##*/}" "$OPTARG" && exit 1 ;;
         esac
     done
@@ -404,4 +407,5 @@ runScript() {
     done
 }
 
-runScript $@
+# runScript $@
+updateMirrors

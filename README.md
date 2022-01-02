@@ -21,6 +21,8 @@ and then
 sh CocoASAIS
 ```
 
+You can use `-d` or `-f`...
+
 ## Contributing <a name="contributing"></a>
 PRs are welcome.
 
