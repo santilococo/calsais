@@ -191,6 +191,7 @@ installPackage() {
             runInChroot "sudo -u $username paru -Q ${pkgName}" 2>&1 | debug
             [ $? -eq 0 ] && return
             runInChroot "cd /tmp; sudo -u $username git clone https://github.com/${1}; cd ${pkgName}; sudo -u $username makepkg -si --noconfirm; cd ..; rm -rf ${pkgName}" 2>&1 | debug
+            ;;
         ?)
             logAndExit "INSTALL must be A, B, C or D in packages.csv file." "${3}"
             ;;
