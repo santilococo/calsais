@@ -163,7 +163,6 @@ installPackage() {
         A)  
             if [ $debugFlagToStdout = true ] || [ $debugFlag = true ]; then
                 script -qec "pacstrap /mnt --needed ${1}" /dev/null 2>&1 | debug
-                # ( unbuffer pacstrap /mnt --needed ${1} 2>&1 && cat) | debug
             else
                 pacstrap /mnt --needed ${1} 2>&1 | debug
             fi
@@ -206,13 +205,6 @@ checkForParu() {
         runInChroot "cd /tmp; sudo -u $username git clone https://aur.archlinux.org/paru-bin.git; cd paru-bin; sudo -u $username makepkg -si --noconfirm; cd ..; rm -rf paru-bin" 2>&1 | debug
     fi
 }
-
-# checkForExpect() {
-#     commOutput=$(command -v paru > /dev/null 2>&1 || echo 1)
-#     if [ "$commOutput" = "1" ]; then
-#         pacman -S --needed --noconfirm expect
-#     fi
-# }
 
 getThePackages() {
     set -o pipefail
@@ -388,7 +380,6 @@ finishInstallation() {
 
 zshConfig() {
     # TODO: Choose between zsh-theme-powerlevel10k-git (AUR) and zsh-theme-powerlevel10k (community)
-    # sh -c "$(curl -fsSL https://raw.github.com/ohmyzsh/ohmyzsh/master/tools/install.sh)" "" --unattended 2>&1 | debug
     mkdir -p $HOME/.cache/zsh
     touch $HOME/.cache/zsh/.histfile
 }
@@ -403,14 +394,7 @@ getDotfiles() {
     cd $lastFolder
 
     sudo rm -f ~/.bashrc /usr/bin/CocoASAIS
-    # calcWidthAndRun "whiptail --infobox \"Installing 'zaread-git'.\" 7 WIDTH"
-    # set -o pipefail
-    # paru -Q zaread-git 2>&1 | debug
-    # if [ $? -eq 1 ]; then
-    #     paru -S --needed --noconfirm --skipreview zaread-git 2>&1 | debug
-    # fi
-    # set +o pipefail
-    # chsh -s $(which zsh)
+    chsh -s $(which zsh)
 }
 
 steps=(
