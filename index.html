@@ -146,15 +146,15 @@ mountPart() {
 }
 
 debug() {
-    while read -r input; do
-        if [ $debugFlag = true ]; then
-            tee
-        elif [ $debugFlagToFile = true ]; then
-            echo "$input" >> CocoASAIS.debug
-        else
-            echo "$input" > /dev/null 2>&1
-        fi
-    done
+    if [ $debugFlagToStdout = true ]; then
+        tee
+    elif [ $debugFlagToFile = true ]; then
+        tee -a CocoASAIS.debug > /dev/null
+    elif [ $debugFlag = true ]; then
+        tee -a CocoASAIS.debug
+    else
+        tee > /dev/null
+    fi
 }
 
 installPackage() {
@@ -166,12 +166,20 @@ installPackage() {
         B)
             runInChroot "pacman -Q ${1}" 2>&1 | debug
             [ $? -eq 0 ] && return
-            runInChroot "script -qec \"pacman -S --needed --noconfirm ${1}\" /dev/null" 2>&1 | debug
+            if [ $debugFlagToStdout = true ] || [ $debugFlag = true ]; then
+                runInChroot "script -qec \"pacman -S --needed --noconfirm ${1}\" /dev/null" 2>&1 | debug
+            else
+                runInChroot "pacman -S --needed --noconfirm ${1}" 2>&1 | debug
+            fi
             ;;
         C)  
             runInChroot "sudo -u $username paru -Q ${1}" 2>&1 | debug
             [ $? -eq 0 ] && return
-            runInChroot "script -qec \"sudo -u $username paru -S --needed --noconfirm --skipreview ${1}\" /dev/null" 2>&1 | debug
+            if [ $debugFlagToStdout = true ] || [ $debugFlag = true ]; then
+                runInChroot "script -qec \"sudo -u $username paru -S --needed --noconfirm --skipreview ${1}\" /dev/null" 2>&1 | debug
+            else
+                runInChroot "sudo -u $username paru -S --needed --noconfirm --skipreview ${1}" 2>&1 | debug
+            fi
             ;;
         ?)
             logAndExit "INSTALL must be A, B or C in packages.csv file." "${3}"
@@ -407,12 +415,13 @@ steps=(
 )
 
 runScript() {
-    debugFlag=false; debugFlagToFile=false
-    while getopts ':hdf' flag; do
+    debugFlag=false; debugFlagToFile=false; debugFlagToStdout=false
+    while getopts ':hdfs' flag; do
         case $flag in
             h)  printf 'usage: %s [command]\n\t-h\tPrint this help message.\n\t-d\tDebug to stdout.\n\t-d\tDebug to CocoASAIS.debug file.\n' "${0##*/}" && exit 0 ;;
             d)  debugFlag=true ;;
             f)  debugFlagToFile=true ;;
+            s)  debugFlagToStdout=true ;;
             ?)  printf '%s: invalid option -''%s'\\n "${0##*/}" "$OPTARG" && exit 1 ;;
         esac
     done
