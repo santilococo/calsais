@@ -23,10 +23,6 @@ updateSystemClock() {
     timedatectl set-ntp true
 }
 
-logStep() {
-    echo ${1} > CocoASAIS.log
-}
-
 logAndExit() {
     str="${1} Therefore, the installation process will stop, but you can continue where you left off by running:\n\nsh CocoASAIS"
     newlines=$(printf "$str" | grep -c $'\n')
@@ -36,7 +32,7 @@ logAndExit() {
         printf "%d", (x == int(x)) ? x : int(x) + 1
     }')
     whiptail --msgbox "$str" $((5+height)) 60
-    logStep "${2}"
+    echo ${1} > CocoASAIS.log
     exit 1
 }
 
@@ -85,18 +81,14 @@ partDisks() {
             else
                 whiptail --yesno "Do you want to create a swapfile?" 0 0
                 if [ $? -eq 0 ]; then
-                    sizeStr=$(whiptail --inputbox "Enter the size of the swapfile (in GB)." 0 0 3>&1 1>&2 2>&3)
-                    exitIfCancel "You must enter a size." "partDisks"
-                    size=$(echo $sizeStr | awk -F'[^0-9]+' '{ print $1 }')
+                    size=$(getSize "swapfile")
                     createSwapfile $size
                 fi
             fi
         else
             whiptail --yesno "Do you want to create a swapfile?" 0 0
             if [ $? -eq 0 ]; then
-                sizeStr=$(whiptail --inputbox "Enter the size of the swapfile (in GB)." 0 0 3>&1 1>&2 2>&3)
-                exitIfCancel "You must enter a size." "partDisks"
-                size=$(echo $sizeStr | awk -F'[^0-9]+' '{ print $1 }')
+                size=$(getSize "swapfile")
                 createSwapfile $size
             fi
         fi
@@ -109,9 +101,7 @@ partDisks() {
         if [ $? -eq 0 ]; then
             result=$(whiptail --title "Select the swap space." --menu "" 0 0 0 "Partition" "" "Swapfile" "" 3>&1 1>&2 2>&3)
             exitIfCancel "You must select a swap space." "partDisks"
-            sizeStr=$(whiptail --inputbox "Enter the size of the ${result} (in GB)." 0 0 3>&1 1>&2 2>&3)
-            exitIfCancel "You must enter a size." "partDisks"
-            size=$(echo $sizeStr | awk -F'[^0-9]+' '{ print $1 }')
+            size=$(getSize "${result:l}")
             if [ "$result" = "Partition" ]; then
                 swapPart=${disk}2
                 rootPart=${disk}3
@@ -125,6 +115,12 @@ partDisks() {
 
     formatPart
     mountPart
+}
+
+getSize() {
+    sizeStr=$(whiptail --inputbox "Enter the size of the ${1} (in GB)." 0 0 3>&1 1>&2 2>&3)
+    exitIfCancel "You must enter a size." "partDisks"
+    echo "$sizeStr" | awk -F'[^0-9]+' '{ print $1 }'
 }
 
 createSwapfile() {
