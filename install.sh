@@ -205,7 +205,7 @@ checkForParu() {
 checkForExpect() {
     commOutput=$(command -v paru > /dev/null 2>&1 || echo 1)
     if [ "$commOutput" = "1" ]; then
-        pacman -S expect
+        pacman -S --needed --noconfirm expect
     fi
 }
 
