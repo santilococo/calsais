@@ -173,6 +173,7 @@ mountPart() {
                 bootPath=$(echo $result | sed 's/^\///g')
                 mkdir -p "/mnt/$bootPath"
             done
+            result=$bootPath
         fi
         mount "$bootPart" "/mnt/$result" 2>&1 | debug
     else
