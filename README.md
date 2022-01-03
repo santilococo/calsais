@@ -21,7 +21,7 @@ and then
 sh CocoASAIS
 ```
 
-You can use `-d` or `-f` to debug.
+You can use `-d`, `-f` or `-s` to debug.
 
 The script only supports UEFI boot mode.
 
