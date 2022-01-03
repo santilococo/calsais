@@ -83,12 +83,22 @@ partDisks() {
                 exitIfCancel "You must select the swap partition." "partDisks"
                 swapPart=$(echo $result | cut -d' ' -f1)
             else
-                whiptail --yesno "Do you want a swapfile?" 0 0
-                [ $? -eq 0 ] && createSwapfile
+                whiptail --yesno "Do you want to create a swapfile?" 0 0
+                if [ $? -eq 0 ]; then
+                    sizeStr=$(whiptail --inputbox "Enter the size of the swapfile (in GB)." 0 0 3>&1 1>&2 2>&3)
+                    exitIfCancel "You must enter a size." "partDisks"
+                    size=$(echo $sizeStr | awk -F'[^0-9]+' '{ print $1 }')
+                    createSwapfile $size
+                fi
             fi
         else
-            whiptail --yesno "Do you want a swapfile?" 0 0
-            [ $? -eq 0 ] && createSwapfile
+            whiptail --yesno "Do you want to create a swapfile?" 0 0
+            if [ $? -eq 0 ]; then
+                sizeStr=$(whiptail --inputbox "Enter the size of the swapfile (in GB)." 0 0 3>&1 1>&2 2>&3)
+                exitIfCancel "You must enter a size." "partDisks"
+                size=$(echo $sizeStr | awk -F'[^0-9]+' '{ print $1 }')
+                createSwapfile $size
+            fi
         fi
     else
         autoSelection=true
@@ -99,11 +109,14 @@ partDisks() {
         if [ $? -eq 0 ]; then
             result=$(whiptail --title "Select the swap space." --menu "" 0 0 0 "Partition" "" "Swapfile" "" 3>&1 1>&2 2>&3)
             exitIfCancel "You must select a swap space." "partDisks"
+            sizeStr=$(whiptail --inputbox "Enter the size of the ${result} (in GB)." 0 0 3>&1 1>&2 2>&3)
+            exitIfCancel "You must enter a size." "partDisks"
+            size=$(echo $sizeStr | awk -F'[^0-9]+' '{ print $1 }')
             if [ "$result" = "Partition" ]; then
                 swapPart=${disk}2
                 rootPart=${disk}3
             else
-                createSwapfile
+                createSwapfile $size
             fi
         fi
 
@@ -116,7 +129,7 @@ partDisks() {
 
 createSwapfile() {
     swapfile=/mnt/swapfile
-    dd if=/dev/zero of=$swapfile bs=1M count=512 status=progress
+    dd if=/dev/zero of=$swapfile bs=1M count=$1 status=progress
     chmod 600 $swapfile
     mkswap $swapfile
     swapon $swapfile
@@ -127,7 +140,7 @@ autoPart() {
 
     sgdisk $disk -n=1:0:+300M -t=1:ef00 2>&1 | debug
     if [ -n "$swapPart" ]; then
-        sgdisk $disk -n=2:0:+1024M -t=2:8200 2>&1 | debug
+        sgdisk $disk -n=2:0:+${size}G -t=2:8200 2>&1 | debug
         sgdisk $disk -n=3:0:0 2>&1 | debug
     else
         sgdisk $disk -n=2:0:0 2>&1 | debug
@@ -148,7 +161,7 @@ mountPart() {
         exitIfCancel "You must select a path." "partDisks"
         if [ "$result" = "OTHER" ]; then
             local IFS=' '
-            result=$(whiptail --inputbox "Enter the absolute path." 0 0 3>&1 1>&2 2>&3)    
+            result=$(whiptail --inputbox "Enter the absolute path." 0 0 3>&1 1>&2 2>&3)
             exitIfCancel "You must enter a path." "partDisks"
             mkdir -p "/mnt/$result"
             while [[ ! -d "$result" ]]; do
