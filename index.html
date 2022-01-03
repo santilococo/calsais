@@ -223,9 +223,6 @@ installImportantPackages() {
 
 generateFstab() {
     genfstab -U /mnt > /mnt/etc/fstab
-    if [ -n "$swapfile" ]; then
-        echo "/swapfile none swap defaults 0 0" > /mnt/etc/fstab
-    fi
 }
 
 setTimeZone() {
