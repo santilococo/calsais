@@ -161,7 +161,11 @@ installPackage() {
     calcWidthAndRun "whiptail --infobox \"Installing '$1'.\" 7 WIDTH"
     case ${2} in
         A)  
-            pacstrap /mnt --needed ${1} 2>&1 | debug
+            if [ $debugFlagToStdout = true ] || [ $debugFlag = true ]; then
+                script -qec "pacstrap /mnt --needed ${1}" /dev/null 2>&1 | debug
+            else
+                pacstrap /mnt --needed ${1} 2>&1 | debug
+            fi
             ;;
         B)
             runInChroot "pacman -Q ${1}" 2>&1 | debug
