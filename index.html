@@ -162,7 +162,8 @@ installPackage() {
     case ${2} in
         A)  
             if [ $debugFlagToStdout = true ] || [ $debugFlag = true ]; then
-                script -qec "pacstrap /mnt --needed ${1}" /dev/null 2>&1 | debug
+                # script -qec "pacstrap /mnt --needed ${1}" /dev/null 2>&1 | debug
+                ( unbuffer pacstrap /mnt --needed ${1} 2>&1 && cat) | debug
             else
                 pacstrap /mnt --needed ${1} 2>&1 | debug
             fi
@@ -201,6 +202,13 @@ checkForParu() {
     fi
 }
 
+checkForExpect() {
+    commOutput=$(command -v paru > /dev/null 2>&1 || echo 1)
+    if [ "$commOutput" = "1" ]; then
+        pacman -S expect
+    fi
+}
+
 getThePackages() {
     set -o pipefail
     if [ ! -f "packages.csv" ]; then
@@ -217,6 +225,7 @@ getThePackages() {
 
 installImportantPackages() {
     calcHeightAndRun "whiptail --msgbox \"We will continue with the installation of some important packages in the background. Please press OK and wait.\" HEIGHT 60 3>&1 1>&2 2>&3"
+    checkForExpect
     getThePackages "Y" "installImportantPackages"
     runInChroot "systemctl enable NetworkManager; systemctl enable fstrim.timer" 2>&1 | debug
 }
