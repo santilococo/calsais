@@ -11,6 +11,7 @@ formatOptions() {
     done
 }
 
+# TODO: Add support for MBR boot mode
 checkUefi() {
     ls /sys/firmware/efi/efivars > /dev/null 2>&1
     if [ $? -ge 1 ]; then
@@ -94,7 +95,7 @@ partDisks() {
 
         whiptail --yesno "Do you want to create a swap space?" 0 0
         if [ $? -eq 0 ]; then
-            result=$(whiptail --title "Select the swap space." 0 0 0 "Partition" "" "Swapfile" "")
+            result=$(whiptail --title "Select the swap space." --menu "" 0 0 0 "Partition" "" "Swapfile" "" 3>&1 1>&2 2>&3)
             exitIfCancel "You must select a swap space." "partDisks"
             if [ "$result" = "Partition" ]; then
                 swapPart=${disk}2
@@ -131,6 +132,7 @@ autoPart() {
     fi
 }
 
+# TODO: Let the user choose the file system (and add encryption support)
 formatPart() {
     mkfs.fat -F 32 "$bootPart" 2>&1 | debug
     [ -n "$swapPart" ] && mkswap "$swapPart" 2>&1 | debug
