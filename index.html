@@ -58,6 +58,7 @@ partDisks() {
     disk=$(echo $result | cut -d' ' -f1)
 
     if [ $whipStatus -eq 1 ]; then
+        autoSelection=false
         calcHeightAndRun "whiptail --msgbox \"You will partition the disk yourself with gdisk and then, when finished, you will continue with the installation.\" HEIGHT 62 3>&1 1>&2 2>&3"
         gdisk $disk
         parts=$(lsblk $disk -pnl | sed -n '2~1p' | wc -l)
@@ -90,6 +91,7 @@ partDisks() {
             [ $? -eq 0 ] && createSwapfile
         fi
     else
+        autoSelection=true
         bootPart=${disk}1
         rootPart=${disk}2
 
@@ -141,9 +143,23 @@ formatPart() {
 
 mountPart() {
     mount "$rootPart" /mnt 2>&1 | debug
-    mkdir -p /mnt/boot/efi 
-    # TODO: Ask where to mount the bootPart
-    mount "$bootPart" /mnt/boot/efi 2>&1 | debug
+    if [ $autoSelection = true ]; then
+        result=$(whiptail --title "Select where to mount boot partition." 0 0 0 "/boot/efi" "" "/boot" "" "OTHER" "")
+        exitIfCancel "You must select a path." "partDisks"
+        if [ "$result" = "OTHER" ]; then
+            local IFS=' '
+            result=$(whiptail --inputbox "Enter the absolute path." 0 0 3>&1 1>&2 2>&3)    
+            exitIfCancel "You must enter a path." "partDisks"
+            mkdir -p "/mnt/$result"
+            while [[ ! -d "$result" ]]; do
+                result=$(whiptail --inputbox "Path isn't valid. Please try again" 0 0 3>&1 1>&2 2>&3)
+            done
+        fi
+        mount "$bootPart" "/mnt/$result" 2>&1 | debug
+    else
+        mkdir -p /mnt/boot/efi 
+        mount "$bootPart" /mnt/boot/efi 2>&1 | debug
+    fi
     [ -n "$swapPart" ] && swapon "$swapPart" 2>&1 | debug
 }
 
