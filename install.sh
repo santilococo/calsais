@@ -162,8 +162,8 @@ installPackage() {
     case ${2} in
         A)  
             if [ $debugFlagToStdout = true ] || [ $debugFlag = true ]; then
-                # script -qec "pacstrap /mnt --needed ${1}" /dev/null 2>&1 | debug
-                ( unbuffer pacstrap /mnt --needed ${1} 2>&1 && cat) | debug
+                script -qec "pacstrap /mnt --needed ${1}" /dev/null 2>&1 | debug
+                # ( unbuffer pacstrap /mnt --needed ${1} 2>&1 && cat) | debug
             else
                 pacstrap /mnt --needed ${1} 2>&1 | debug
             fi
@@ -202,12 +202,12 @@ checkForParu() {
     fi
 }
 
-checkForExpect() {
-    commOutput=$(command -v paru > /dev/null 2>&1 || echo 1)
-    if [ "$commOutput" = "1" ]; then
-        pacman -S --needed --noconfirm expect
-    fi
-}
+# checkForExpect() {
+#     commOutput=$(command -v paru > /dev/null 2>&1 || echo 1)
+#     if [ "$commOutput" = "1" ]; then
+#         pacman -S --needed --noconfirm expect
+#     fi
+# }
 
 getThePackages() {
     set -o pipefail
@@ -217,7 +217,7 @@ getThePackages() {
     local IFS=,
     while read -r NAME IMPORTANT INSTALL; do
         if [ "$IMPORTANT" = "${1}" ]; then
-            installPackage "$NAME" "$INSTALL" "${2}"
+            installPackage "$NAME" "$INSTALL" "${2}" < /dev/null
         fi
     done < packages.csv
     set +o pipefail
