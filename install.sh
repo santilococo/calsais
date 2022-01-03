@@ -143,7 +143,7 @@ formatPart() {
 
 mountPart() {
     mount "$rootPart" /mnt 2>&1 | debug
-    if [ $autoSelection = true ]; then
+    if [ $autoSelection = false ]; then
         result=$(whiptail --title "Select where to mount boot partition." 0 0 0 "/boot/efi" "" "/boot" "" "OTHER" "")
         exitIfCancel "You must select a path." "partDisks"
         if [ "$result" = "OTHER" ]; then
