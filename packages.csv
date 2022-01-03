@@ -3,7 +3,7 @@ base,Y,A
 base-devel,S,B
 linux,Y,A
 linux-firmware,Y,A
-libxft-bgra,N,C
+santilococo/libxft-bgra.git,N,D
 alacritty,N,B
 alsa-utils,S,B
 bc,N,B
