@@ -244,25 +244,25 @@ setTimeZone() {
     city=$(whiptail --title "City" --menu "" 0 0 0 "${options[@]}" 3>&1 1>&2 2>&3)
     exitIfCancel "You must select a city." "setTimeZone"
 
-    ln -sf /usr/share/zoneinfo/${region}/${city} /etc/localtime
+    ln -sf /mnt/usr/share/zoneinfo/${region}/${city} /mnt/etc/localtime
     runInChroot "hwclock --systohc"
 }
 
 setLocale() {
     # TODO: Let the user choose a locale
-    sed 's/#en_US.UTF-8 UTF-8/en_US.UTF-8 UTF-8/' -i /etc/locale.gen
+    sed 's/#en_US.UTF-8 UTF-8/en_US.UTF-8 UTF-8/' -i /mnt/etc/locale.gen
     runInChroot "locale-gen" 2>&1 | debug
-    echo "LANG=en_US.UTF-8" > /etc/locale.conf
+    echo "LANG=en_US.UTF-8" > /mnt/etc/locale.conf
 }
 
 networkConf() {
     hostname=$(whiptail --inputbox "Enter the hostname." 0 0 3>&1 1>&2 2>&3)
     exitIfCancel "You must enter a hostname." "networkConf"
-    echo "${hostname}" > /etc/hostname
+    echo "${hostname}" > /mnt/etc/hostname
     echo "
 127.0.0.1   localhost
 ::1     localhost
-127.0.1.1   ${hostname}.localdomain ${hostname}" >> /etc/hosts
+127.0.1.1   ${hostname}.localdomain ${hostname}" >> /mnt/etc/hosts
     unset hostname
 }
 
