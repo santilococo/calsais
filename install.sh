@@ -82,14 +82,14 @@ partDisks() {
                 whiptail --yesno "Do you want to create a swapfile?" 0 0
                 if [ $? -eq 0 ]; then
                     size=$(getSize "swapfile")
-                    createSwapfile $size
+                    swapfile=/mnt/swapfile
                 fi
             fi
         else
             whiptail --yesno "Do you want to create a swapfile?" 0 0
             if [ $? -eq 0 ]; then
                 size=$(getSize "swapfile")
-                createSwapfile $size
+                swapfile=/mnt/swapfile
             fi
         fi
     else
@@ -106,7 +106,7 @@ partDisks() {
                 swapPart=${disk}2
                 rootPart=${disk}3
             else
-                createSwapfile $size
+                swapfile=/mnt/swapfile
             fi
         fi
 
@@ -126,14 +126,12 @@ getSize() {
         exitIfCancel "You must enter a size." "partDisks"
         #calcHeightAndRun "whiptail --inputbox \"Size cannot be less than or equal to zero. Please enter a new size.\" HEIGHT 60 3>&1 1>&2 2>&3"
         size=$(echo "$sizeStr" | grep -Eo '[-]?[0-9]+([.,]?[0-9]+)?' | head -n1 | sed 's/,/./g' | awk '{ print int($1 * 1024) }')
-        echo $size | awk '{ print $1 <= 0 }'
     done
     echo $size
 }
 
 createSwapfile() {
-    swapfile=/mnt/swapfile
-    dd if=/dev/zero of=$swapfile bs=1M count=$1 status=progress
+    dd if=/dev/zero of=$swapfile bs=1M count=${size} status=progress
     chmod 600 $swapfile
     mkswap $swapfile
     swapon $swapfile
@@ -147,6 +145,7 @@ autoPart() {
         sgdisk $disk -n=2:0:+${size}G -t=2:8200 2>&1 | debug
         sgdisk $disk -n=3:0:0 2>&1 | debug
     else
+        [ -n "$swapfile" ] && createSwapfile
         sgdisk $disk -n=2:0:0 2>&1 | debug
     fi
 }
