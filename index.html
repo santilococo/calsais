@@ -148,7 +148,7 @@ mountPart() {
 debug() {
     while read -r input; do
         if [ $debugFlag = true ]; then
-            echo "$input"
+            tee
         elif [ $debugFlagToFile = true ]; then
             echo "$input" >> CocoASAIS.debug
         else
@@ -166,12 +166,12 @@ installPackage() {
         B)
             runInChroot "pacman -Q ${1}" 2>&1 | debug
             [ $? -eq 0 ] && return
-            runInChroot "pacman -S --needed --noconfirm ${1}" 2>&1 | debug
+            runInChroot "script -qec \"pacman -S --needed --noconfirm ${1}\" /dev/null" 2>&1 | debug
             ;;
         C)  
             runInChroot "sudo -u $username paru -Q ${1}" 2>&1 | debug
             [ $? -eq 0 ] && return
-            runInChroot "sudo -u $username paru -S --needed --noconfirm --skipreview ${1}" 2>&1 | debug
+            runInChroot "script -qec \"sudo -u $username paru -S --needed --noconfirm --skipreview ${1}\" /dev/null" 2>&1 | debug
             ;;
         ?)
             logAndExit "INSTALL must be A, B or C in packages.csv file." "${3}"
