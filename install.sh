@@ -56,6 +56,7 @@ partDisks() {
     if [ $whipStatus -eq 1 ]; then
         autoSelection=false
         calcHeightAndRun "whiptail --msgbox \"You will partition the disk yourself with gdisk and then, when finished, you will continue with the installation.\" HEIGHT 62 3>&1 1>&2 2>&3"
+        # TODO: Let the user choose the program
         gdisk $disk
         parts=$(lsblk $disk -pnl | sed -n '2~1p' | wc -l)
         [ $parts -lt 2 ] && logAndExit "You must at least create boot and root partitions." "partDisks"
@@ -158,7 +159,7 @@ formatPart() {
 mountPart() {
     mount "$rootPart" /mnt 2>&1 | debug
     if [ $autoSelection = false ]; then
-        result=$(whiptail --title "Select where to mount boot partition." 0 0 0 "/boot/efi" "" "/boot" "" "OTHER" "")
+        result=$(whiptail --title "Select where to mount boot partition." --menu "" 0 0 0 "/boot/efi" "" "/boot" "" "OTHER" "")
         exitIfCancel "You must select a path." "partDisks"
         if [ "$result" = "OTHER" ]; then
             local IFS=' '
