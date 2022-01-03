@@ -130,10 +130,10 @@ getSize() {
 }
 
 createSwapfile() {
-    dd if=/dev/zero of=$swapfile bs=1M count=${size} status=progress
-    chmod 600 $swapfile
-    mkswap $swapfile
-    swapon $swapfile
+    dd if=/dev/zero of=$swapfile bs=1M count=${size} status=progress 2>&1 | debug
+    chmod 600 $swapfile 2>&1 | debug
+    mkswap $swapfile 2>&1 | debug
+    swapon $swapfile 2>&1 | debug
 }
 
 autoPart() {
