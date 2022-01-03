@@ -120,7 +120,7 @@ partDisks() {
 getSize() {
     sizeStr=$(whiptail --inputbox "Enter the size of the ${1} (in GB)." 0 0 3>&1 1>&2 2>&3)
     exitIfCancel "You must enter a size." "partDisks"
-    echo "$sizeStr" | awk -F'[^0-9]+' '{ print $1 }'
+    echo "$sizeStr" | awk -F'[^0-9.,]+' '{ print $1 }'
 }
 
 createSwapfile() {
