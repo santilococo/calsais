@@ -499,5 +499,4 @@ runScript() {
     done
 }
 
-# runScript "$@"
-getSize "Partition"
+runScript "$@"
