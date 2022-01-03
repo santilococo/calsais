@@ -124,7 +124,6 @@ getSize() {
     while [ $(echo $size | awk '{ print $1 <= 0 }') -eq 1 ]; do
         sizeStr=$(whiptail --inputbox "Size cannot be less than or equal to zero. Please enter a new size." 0 0 3>&1 1>&2 2>&3)
         exitIfCancel "You must enter a size." "partDisks"
-        #calcHeightAndRun "whiptail --inputbox \"Size cannot be less than or equal to zero. Please enter a new size.\" HEIGHT 60 3>&1 1>&2 2>&3"
         size=$(echo "$sizeStr" | grep -Eo '[-]?[0-9]+([.,]?[0-9]+)?' | head -n1 | sed 's/,/./g' | awk '{ print int($1 * 1024) }')
     done
     echo $size
@@ -145,7 +144,6 @@ autoPart() {
         sgdisk $disk -n=2:0:+${size}G -t=2:8200 2>&1 | debug
         sgdisk $disk -n=3:0:0 2>&1 | debug
     else
-        [ -n "$swapfile" ] && createSwapfile
         sgdisk $disk -n=2:0:0 2>&1 | debug
     fi
 }
@@ -177,6 +175,7 @@ mountPart() {
         mount "$bootPart" /mnt/boot/efi 2>&1 | debug
     fi
     [ -n "$swapPart" ] && swapon "$swapPart" 2>&1 | debug
+    [ -n "$swapfile" ] && createSwapfile
 }
 
 debug() {
