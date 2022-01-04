@@ -448,7 +448,7 @@ getDotfiles() {
 
 checkForSystemdUnits() {
     trap 'systemctl stop reflector' INT
-    calcHeightAndRun "whiptail --infobox \"Waiting for systemd units to finish. In particular 'reflector.service' is the one that will take the longest. If you want to stop it, type Ctrl+C (note that the script will ask you later if you want to update the mirrors, so don't worry).\" HEIGTH 61"
+    calcHeightAndRun "whiptail --infobox \"Waiting for systemd units to finish. In particular 'reflector.service' is the one that will take the longest. If you want to stop it, type Ctrl+C (note that the script will ask you later if you want to update the mirrors, so don't worry).\" HEIGHT 61"
     systemctl is-active --quiet graphical.target
     while [ $? -ne 0 ]; do
         sleep 1
