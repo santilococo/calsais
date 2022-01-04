@@ -142,7 +142,7 @@ autoPart() {
 
     sgdisk $disk -n=1:0:+300M -t=1:ef00 2>&1 | debug
     if [ -n "$swapPart" ]; then
-        sgdisk $disk -n=2:0:+${size}G -t=2:8200 2>&1 | debug
+        sgdisk $disk -n=2:0:+${size}M -t=2:8200 2>&1 | debug
         sgdisk $disk -n=3:0:0 2>&1 | debug
     else
         sgdisk $disk -n=2:0:0 2>&1 | debug
