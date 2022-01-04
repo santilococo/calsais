@@ -209,21 +209,31 @@ installPackage() {
             fi
             ;;
         B)
-            runInChroot "pacman -Q ${1}" 2>&1 | debug
-            [ $? -eq 0 ] && [ "$2" != "R" ] && return
-            if [ $debugFlagToStdout = true ] || [ $debugFlag = true ]; then
-                runInChroot "script -qec \"pacman -S --noconfirm ${1}\" /dev/null" 2>&1 | debug
+            if [ "$2" != "R" ]; then
+                runInChroot "pacman -Q ${1}" 2>&1 | debug
+                [ $? -eq 0 ] && return
+                needed="--needed"
             else
-                runInChroot "pacman -S --noconfirm ${1}" 2>&1 | debug
+                needed=""
+            fi
+            if [ $debugFlagToStdout = true ] || [ $debugFlag = true ]; then
+                runInChroot "script -qec \"pacman -S $needed --noconfirm ${1}\" /dev/null" 2>&1 | debug
+            else
+                runInChroot "pacman -S $needed --noconfirm ${1}" 2>&1 | debug
             fi
             ;;
         C)  
-            runInChroot "sudo -u $username paru -Q ${1}" 2>&1 | debug
-            [ $? -eq 0 ] && [ "$2" != "R" ] && return
-            if [ $debugFlagToStdout = true ] || [ $debugFlag = true ]; then
-                runInChroot "script -qec \"sudo -u $username paru -S --noconfirm --skipreview ${1}\" /dev/null" 2>&1 | debug
+            if [ "$2" != "R" ]; then
+                runInChroot "sudo -u $username paru -Q ${1}" 2>&1 | debug
+                [ $? -eq 0 ] && return
+                needed="--needed"
             else
-                runInChroot "sudo -u $username paru -S --noconfirm --skipreview ${1}" 2>&1 | debug
+                needed=""
+            fi
+            if [ $debugFlagToStdout = true ] || [ $debugFlag = true ]; then
+                runInChroot "script -qec \"sudo -u $username paru -S $needed --noconfirm --skipreview ${1}\" /dev/null" 2>&1 | debug
+            else
+                runInChroot "sudo -u $username paru -S $needed --noconfirm --skipreview ${1}" 2>&1 | debug
             fi
             ;;
         D)
