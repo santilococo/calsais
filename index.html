@@ -200,7 +200,7 @@ debug() {
 
 installPackage() {
     calcWidthAndRun "whiptail --infobox \"Installing '$1'.\" 7 WIDTH"
-    case ${2} in
+    case ${3} in
         A)  
             if [ $debugFlagToStdout = true ] || [ $debugFlag = true ]; then
                 script -qec "pacstrap /mnt --needed ${1}" /dev/null 2>&1 | debug
@@ -210,20 +210,20 @@ installPackage() {
             ;;
         B)
             runInChroot "pacman -Q ${1}" 2>&1 | debug
-            [ $? -eq 0 ] && return
+            [ $? -eq 0 ] && [ "$4" != "R" ] && return
             if [ $debugFlagToStdout = true ] || [ $debugFlag = true ]; then
-                runInChroot "script -qec \"pacman -S --needed --noconfirm ${1}\" /dev/null" 2>&1 | debug
+                runInChroot "script -qec \"pacman -S --noconfirm ${1}\" /dev/null" 2>&1 | debug
             else
-                runInChroot "pacman -S --needed --noconfirm ${1}" 2>&1 | debug
+                runInChroot "pacman -S --noconfirm ${1}" 2>&1 | debug
             fi
             ;;
         C)  
             runInChroot "sudo -u $username paru -Q ${1}" 2>&1 | debug
-            [ $? -eq 0 ] && return
+            [ $? -eq 0 ] && [ "$4" != "R" ] && return
             if [ $debugFlagToStdout = true ] || [ $debugFlag = true ]; then
-                runInChroot "script -qec \"sudo -u $username paru -S --needed --noconfirm --skipreview ${1}\" /dev/null" 2>&1 | debug
+                runInChroot "script -qec \"sudo -u $username paru -S --noconfirm --skipreview ${1}\" /dev/null" 2>&1 | debug
             else
-                runInChroot "sudo -u $username paru -S --needed --noconfirm --skipreview ${1}" 2>&1 | debug
+                runInChroot "sudo -u $username paru -S --noconfirm --skipreview ${1}" 2>&1 | debug
             fi
             ;;
         D)
@@ -233,10 +233,10 @@ installPackage() {
             runInChroot "cd /tmp; sudo -u $username git clone https://github.com/${1}; cd ${pkgName}; sudo -u $username makepkg -si --noconfirm; cd ..; rm -rf ${pkgName}" 2>&1 | debug
             ;;
         ?)
-            logAndExit "INSTALL must be A, B, C or D in packages.csv file." "${3}"
+            logAndExit "INSTALL must be A, B, C or D in packages.csv file." "${4}"
             ;;
     esac
-    exitIfCancel "Package installation failed." "${3}"
+    exitIfCancel "Package installation failed." "${4}"
 }
 
 checkForParu() {
@@ -253,9 +253,9 @@ getThePackages() {
         curl -LO "https://raw.githubusercontent.com/santilococo/CocoASAIS/master/packages.csv" 2>&1 | debug
     fi
     local IFS=,
-    while read -r NAME IMPORTANT INSTALL; do
+    while read -r NAME IMPORTANT INSTALLER; do
         if [ "$IMPORTANT" = "${1}" ]; then
-            installPackage "$NAME" "$INSTALL" "${2}" < /dev/null
+            installPackage "$NAME" "$IMPORTANT" "$INSTALLER" "${2}" < /dev/null
         fi
     done < packages.csv
     set +o pipefail
@@ -402,6 +402,7 @@ installOtherPackages() {
     getThePackages "S" "installOtherPackages"
     checkForParu
     getThePackages "N" "installOtherPackages"
+    getThePackages "R" "installOtherPackages"
     runInChroot "sed -i 's/^%wheel ALL=(ALL) NOPASSWD: ALL/# %wheel ALL=(ALL) NOPASSWD: ALL/' /etc/sudoers"
 }
 
