@@ -31,7 +31,7 @@ logAndExit() {
         x = (($1 - $2 + ($2 * 60)) / 60)
         printf "%d", (x == int(x)) ? x : int(x) + 1
     }')
-    whiptail --msgbox "$str" $((5+height)) 60
+    whiptail --msgbox "$str" $((5+height)) 60 3>&1 1>&2 2>&3
     echo ${2} > CocoASAIS.log
     exit 1
 }
