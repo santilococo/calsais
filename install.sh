@@ -363,15 +363,15 @@ setRootPassword() {
 
 updateMirrors() {
     whiptail --yesno "Would you like to update your mirrors by choosing your closest countries?" 0 0 || return
-    runInChroot "cp /etc/pacman.d/mirrorlist /etc/pacman.d/mirrorlist.backup"
-    runInChroot "curl -o /etc/pacman.d/mirrorlist.pacnew https://archlinux.org/mirrorlist/all/" 2>&1 | debug
+    cp /etc/pacman.d/mirrorlist /etc/pacman.d/mirrorlist.backup
+    curl -o /etc/pacman.d/mirrorlist.pacnew https://archlinux.org/mirrorlist/all/ 2>&1 | debug
     local IFS=$'\n'
     setDelimiters "" "OFF"
-    formatOptions $(cat /mnt/etc/pacman.d/mirrorlist.pacnew | grep '^##' | cut -d' ' -f2- | sed -n '5~1p')
+    formatOptions $(cat /etc/pacman.d/mirrorlist.pacnew | grep '^##' | cut -d' ' -f2- | sed -n '5~1p')
     countries=$(whiptail --title "Countries" --checklist "" 0 0 0 "${options[@]}" 3>&1 1>&2 2>&3)
     exitIfCancel "You must select at least one country." "updateMirrors"
     countriesFmt=$(echo "$countries" | sed -r 's/" "/,/g')
-    runInChroot "sudo reflector --country \"${countriesFmt//\"/}\" --protocol https --sort rate --save /etc/pacman.d/mirrorlist" 2>&1 | debug
+    sudo reflector --country \"${countriesFmt//\"/}\" --protocol https --sort rate --save /etc/pacman.d/mirrorlist 2>&1 | debug
 }
 
 grubSetUp() {
@@ -460,13 +460,13 @@ steps=(
     checkUefi
     updateSystemClock
     partDisks
+    updateMirrors
     installImportantPackages
     generateFstab
     setTimeZone
     setLocale
     networkConf
     setRootPassword
-    updateMirrors
     grubSetUp
     userSetUp
     installOtherPackages
@@ -523,4 +523,5 @@ runScript() {
     done
 }
 
-runScript "$@"
+# runScript "$@"
+updateMirrors
