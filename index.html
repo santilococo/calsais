@@ -475,8 +475,8 @@ runScript() {
         esac
     done
 
-    clear
     if [ -d "$HOME/Documents" ]; then
+        clear
         whiptail --title "CocoASAIS" --msgbox "Now, we will finish the installation. Press OK and wait." 7 60
         getDotfiles
         whiptail --title "CocoASAIS" --msgbox "All done!" 0 0
@@ -505,6 +505,7 @@ runScript() {
         welcomeMsg="Welcome to CocoASAIS!"
     fi
 
+    reset
     whiptail --title "CocoASAIS" --msgbox "${welcomeMsg}" 0 0
 
     while [ $i -le "${#steps[@]}" ]; do
