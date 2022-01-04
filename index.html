@@ -263,7 +263,6 @@ getThePackages() {
 
 installImportantPackages() {
     calcHeightAndRun "whiptail --msgbox \"We will continue with the installation of some important packages in the background. Please press OK and wait.\" HEIGHT 60 3>&1 1>&2 2>&3"
-    checkForExpect
     getThePackages "Y" "installImportantPackages"
     runInChroot "systemctl enable NetworkManager; systemctl enable fstrim.timer" 2>&1 | debug
 }
