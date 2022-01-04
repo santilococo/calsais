@@ -447,14 +447,17 @@ getDotfiles() {
 }
 
 checkForGraphicalInterface() {
-    calcHeightAndRun "whiptail --infobox \"Waiting for archiso to finish its tasks (reflector and graphical interface). This may take a while, please wait.\" HEIGTH 61"
+    trap 'systemctl stop reflector; forceExit=true' INT
+    calcHeightAndRun "whiptail --infobox \"Waiting for systemd units to finish ('reflector.service'). This may take a while, please wait.\" HEIGTH 61"
     journalctl --sync
     result=$(journalctl -b -q -r -g "Graphical" | wc -l)
-    while [ $result -lt 2 ]; do
+    forceExit=false
+    while [ $result -lt 2 ] && [ $forceExit = false ]; do
         sleep 1
         journalctl --sync
         result=$(journalctl -b -q -r -g "Graphical" | wc -l)
     done
+    trap - INT
 }
 
 steps=(
