@@ -446,7 +446,7 @@ getDotfiles() {
     chsh -s $(which zsh)
 }
 
-checkForGraphicalInterface() {
+checkForSystemdUnits() {
     trap 'systemctl stop reflector; forceExit=true' INT
     calcHeightAndRun "whiptail --infobox \"Waiting for systemd units to finish ('reflector.service'). This may take a while, please wait.\" HEIGTH 61"
     journalctl --sync
@@ -515,7 +515,7 @@ runScript() {
     if [ $i -gt 0 ]; then
         welcomeMsg="Welcome back to CocoASAIS!"
     else
-        checkForGraphicalInterface
+        checkForSystemdUnits
         welcomeMsg="Welcome to CocoASAIS!"
     fi
 
