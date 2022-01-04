@@ -32,7 +32,7 @@ logAndExit() {
         printf "%d", (x == int(x)) ? x : int(x) + 1
     }')
     whiptail --msgbox "$str" $((5+height)) 60
-    echo ${1} > CocoASAIS.log
+    echo ${2} > CocoASAIS.log
     exit 1
 }
 
