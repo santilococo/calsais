@@ -198,7 +198,6 @@ debug() {
     fi
 }
 
-# TODO: Do not reinstall group packages
 installPackage() {
     calcWidthAndRun "whiptail --infobox \"Installing '$1'.\" 7 WIDTH"
     case ${3} in
