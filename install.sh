@@ -523,5 +523,4 @@ runScript() {
     done
 }
 
-# runScript "$@"
-updateMirrors
+runScript "$@"
