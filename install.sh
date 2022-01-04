@@ -210,7 +210,7 @@ installPackage() {
             ;;
         B)
             runInChroot "pacman -Q ${1}" 2>&1 | debug
-            [ $? -eq 0 ] && [ "$4" != "R" ] && return
+            [ $? -eq 0 ] && [ "$2" != "R" ] && return
             if [ $debugFlagToStdout = true ] || [ $debugFlag = true ]; then
                 runInChroot "script -qec \"pacman -S --noconfirm ${1}\" /dev/null" 2>&1 | debug
             else
@@ -219,7 +219,7 @@ installPackage() {
             ;;
         C)  
             runInChroot "sudo -u $username paru -Q ${1}" 2>&1 | debug
-            [ $? -eq 0 ] && [ "$4" != "R" ] && return
+            [ $? -eq 0 ] && [ "$2" != "R" ] && return
             if [ $debugFlagToStdout = true ] || [ $debugFlag = true ]; then
                 runInChroot "script -qec \"sudo -u $username paru -S --noconfirm --skipreview ${1}\" /dev/null" 2>&1 | debug
             else
