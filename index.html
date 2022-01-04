@@ -448,11 +448,11 @@ getDotfiles() {
 
 checkForGraphicalInterface() {
     journalctl --sync
-    result=$(journalctl -b -r -g "Graphical" | wc -l)
+    result=$(journalctl -b -q -r -g "Graphical" | wc -l)
     while [ $result -lt 2 ]; do
-        journalctl --sync
-        result=$(journalctl -b -r -g "Graphical" | wc -l)
         sleep 1
+        journalctl --sync
+        result=$(journalctl -b -q -r -g "Graphical" | wc -l)
     done
 }
 
