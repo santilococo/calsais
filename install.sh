@@ -365,6 +365,7 @@ updateMirrors() {
     calcHeightAndRun "whiptail --msgbox \"Now, we will update the mirror list by taking the most recently synchronized HTTPS mirrors sorted by download rate.\" HEIGHT 65"
     whiptail --yesno "Would you like to choose your closest countries to narrow the search?" 0 0
     if [ $? -eq 0 ]; then
+        systemctl stop reflector.service
         cp /etc/pacman.d/mirrorlist /etc/pacman.d/mirrorlist.backup
         curl -o /etc/pacman.d/mirrorlist.pacnew https://archlinux.org/mirrorlist/all/ 2>&1 | debug
         local IFS=$'\n'
@@ -375,8 +376,7 @@ updateMirrors() {
         countriesFmt=$(echo "$countries" | sed -r 's/" "/,/g')
         reflector --country \"${countriesFmt//\"/}\" --protocol https --sort rate --save /etc/pacman.d/mirrorlist 2>&1 | debug
     else
-        reflector --protocol https --sort rate --latest 20 --save /etc/pacman.d/mirrorlist 2>&1 | debug
-        # checkForSystemdUnit "mirrors update" "reflector.service"
+        checkForSystemdUnit "mirrors update" "reflector.service"
     fi
 }
 
@@ -522,7 +522,7 @@ runScript() {
     else
         systemctl stop reflector.service
         checkForSystemdUnit "systemd units" "graphical.target"
-        # systemctl start reflector.service
+        systemctl start reflector.service
         welcomeMsg="Welcome to CocoASAIS!"
     fi
 
