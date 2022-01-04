@@ -167,7 +167,7 @@ mountPart() {
             exitIfCancel "You must enter a path." "partDisks"
             bootPath=$(echo $result | sed 's/^\///g')
             mkdir -p "/mnt/$bootPath"
-            while [[ ! -d "$result" ]]; do
+            while [[ ! -d "/mnt/$result" ]]; do
                 result=$(whiptail --inputbox "Path isn't valid. Please try again" 0 0 3>&1 1>&2 2>&3)
                 exitIfCancel "You must enter a path." "partDisks"
                 bootPath=$(echo $result | sed 's/^\///g')
