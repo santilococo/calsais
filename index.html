@@ -362,7 +362,7 @@ setRootPassword() {
 }
 
 updateMirrors() {
-    whiptail --msgbox "Now, we will update the mirror list by taking the most recently synchronized HTTPS mirrors sorted by download rate." 0 0
+    calcHeightAndRun "whiptail --msgbox \"Now, we will update the mirror list by taking the most recently synchronized HTTPS mirrors sorted by download rate.\" HEIGHT 65"
     whiptail --yesno "Would you like to choose your closest countries to narrow the search?" 0 0
     if [ $? -eq 0 ]; then
         cp /etc/pacman.d/mirrorlist /etc/pacman.d/mirrorlist.backup
