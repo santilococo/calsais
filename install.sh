@@ -209,31 +209,29 @@ installPackage() {
             fi
             ;;
         B)
+            flag=""
             if [ "$2" != "R" ]; then
                 runInChroot "pacman -Q ${1}" 2>&1 | debug
                 [ $? -eq 0 ] && return
-                needed="--needed"
-            else
-                needed=""
+                flag="--needed"
             fi
             if [ $debugFlagToStdout = true ] || [ $debugFlag = true ]; then
-                runInChroot "script -qec \"pacman -S $needed --noconfirm ${1}\" /dev/null" 2>&1 | debug
+                runInChroot "script -qec \"pacman -S $flag --noconfirm ${1}\" /dev/null" 2>&1 | debug
             else
-                runInChroot "pacman -S $needed --noconfirm ${1}" 2>&1 | debug
+                runInChroot "pacman -S $flag --noconfirm ${1}" 2>&1 | debug
             fi
             ;;
         C)  
+            flag=""
             if [ "$2" != "R" ]; then
                 runInChroot "sudo -u $username paru -Q ${1}" 2>&1 | debug
                 [ $? -eq 0 ] && return
-                needed="--needed"
-            else
-                needed=""
+                flag="--needed"
             fi
             if [ $debugFlagToStdout = true ] || [ $debugFlag = true ]; then
-                runInChroot "script -qec \"sudo -u $username paru -S $needed --noconfirm --skipreview ${1}\" /dev/null" 2>&1 | debug
+                runInChroot "script -qec \"sudo -u $username paru -S $flag --noconfirm --skipreview ${1}\" /dev/null" 2>&1 | debug
             else
-                runInChroot "sudo -u $username paru -S $needed --noconfirm --skipreview ${1}" 2>&1 | debug
+                runInChroot "sudo -u $username paru -S $flag --noconfirm --skipreview ${1}" 2>&1 | debug
             fi
             ;;
         D)
