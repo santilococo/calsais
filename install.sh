@@ -159,8 +159,9 @@ formatPart() {
 mountPart() {
     mount "$rootPart" /mnt 2>&1 | debug
     if [ $autoSelection = false ]; then
-        bootPath=$(whiptail --title "Select where to mount boot partition." --menu "" 0 0 0 "/boot/efi" "" "/boot" "" "OTHER" "" 3>&1 1>&2 2>&3)
+        result=$(whiptail --title "Select where to mount boot partition." --menu "" 0 0 0 "/boot/efi" "" "/boot" "" "==OTHER==" "" 3>&1 1>&2 2>&3)
         exitIfCancel "You must select a path." "partDisks"
+        bootPath=$(echo $result | sed 's/^\///g')
         if [ "$result" = "OTHER" ]; then
             local IFS=' '
             result=$(whiptail --inputbox "Enter the absolute path." 0 0 3>&1 1>&2 2>&3)
