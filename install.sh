@@ -362,16 +362,22 @@ setRootPassword() {
 }
 
 updateMirrors() {
-    whiptail --yesno "Would you like to update your mirrors by choosing your closest countries?" 0 0 || return
-    cp /etc/pacman.d/mirrorlist /etc/pacman.d/mirrorlist.backup
-    curl -o /etc/pacman.d/mirrorlist.pacnew https://archlinux.org/mirrorlist/all/ 2>&1 | debug
-    local IFS=$'\n'
-    setDelimiters "" "OFF"
-    formatOptions $(cat /etc/pacman.d/mirrorlist.pacnew | grep '^##' | cut -d' ' -f2- | sed -n '5~1p')
-    countries=$(whiptail --title "Countries" --checklist "" 0 0 0 "${options[@]}" 3>&1 1>&2 2>&3)
-    [ -z "$countries" ] && logAndExit "You must select at least one country." "updateMirrors"
-    countriesFmt=$(echo "$countries" | sed -r 's/" "/,/g')
-    sudo reflector --country \"${countriesFmt//\"/}\" --protocol https --sort rate --save /etc/pacman.d/mirrorlist 2>&1 | debug
+    whiptail --msgbox "Now, we will update the mirror list by taking the most recently synchronized HTTPS mirrors sorted by download rate." 0 0
+    whiptail --yesno "Would you like to choose your closest countries to narrow the search?" 0 0
+    if [ $? -eq 0 ]; then
+        cp /etc/pacman.d/mirrorlist /etc/pacman.d/mirrorlist.backup
+        curl -o /etc/pacman.d/mirrorlist.pacnew https://archlinux.org/mirrorlist/all/ 2>&1 | debug
+        local IFS=$'\n'
+        setDelimiters "" "OFF"
+        formatOptions $(cat /etc/pacman.d/mirrorlist.pacnew | grep '^##' | cut -d' ' -f2- | sed -n '5~1p')
+        countries=$(whiptail --title "Countries" --checklist "" 0 0 0 "${options[@]}" 3>&1 1>&2 2>&3)
+        [ -z "$countries" ] && logAndExit "You must select at least one country." "updateMirrors"
+        countriesFmt=$(echo "$countries" | sed -r 's/" "/,/g')
+        reflector --country \"${countriesFmt//\"/}\" --protocol https --sort rate --save /etc/pacman.d/mirrorlist 2>&1 | debug
+    else
+        reflector --protocol https --sort rate --latest 20 --save /etc/pacman.d/mirrorlist 2>&1 | debug
+        # checkForSystemdUnit "mirrors update" "reflector.service"
+    fi
 }
 
 grubSetUp() {
@@ -446,13 +452,15 @@ getDotfiles() {
     chsh -s $(which zsh)
 }
 
-checkForSystemdUnits() {
-    trap 'systemctl stop reflector' INT
-    calcHeightAndRun "whiptail --infobox \"Waiting for systemd units to finish. In particular 'reflector.service' is the one that will take the longest. If you want to stop it, type Ctrl+C (note that the script will ask you later if you want to update the mirrors, so don't worry).\" HEIGHT 61"
-    systemctl is-active --quiet graphical.target
+checkForSystemdUnit() {
+    trap 'systemctl stop ${2}' INT
+    # systemctl is-active --quiet ${2}
+    # [ $? -eq 0 ] && return
+    calcHeightAndRun "whiptail --infobox \"Waiting for the ${1} to finish.\" 7 WIDTH"
+    systemctl is-active --quiet ${2}
     while [ $? -ne 0 ]; do
         sleep 1
-        systemctl is-active --quiet graphical.target
+        systemctl is-active --quiet ${2}
     done
     trap - INT
 }
@@ -512,7 +520,9 @@ runScript() {
     if [ $i -gt 0 ]; then
         welcomeMsg="Welcome back to CocoASAIS!"
     else
-        checkForSystemdUnits
+        systemctl stop reflector.service
+        checkForSystemdUnit "systemd units" "graphical.target"
+        # systemctl start reflector.service
         welcomeMsg="Welcome to CocoASAIS!"
     fi
 
