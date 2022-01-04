@@ -129,7 +129,7 @@ noisetorch,N,C
 nvimpager-git,N,C
 orchis-theme-bin,N,C
 pam-gnupg,N,C
-pambase,N,B
+pambase,R,B
 pandoc-bin,N,C
 pdfjumbler,N,C
 picom-git,N,C
