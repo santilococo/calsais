@@ -159,7 +159,7 @@ formatPart() {
 mountPart() {
     mount "$rootPart" /mnt 2>&1 | debug
     if [ $autoSelection = false ]; then
-        result=$(whiptail --title "Select where to mount boot partition." --menu "" 0 0 0 "/boot/efi" "" "/boot" "" "OTHER" "" 3>&1 1>&2 2>&3)
+        bootPath=$(whiptail --title "Select where to mount boot partition." --menu "" 0 0 0 "/boot/efi" "" "/boot" "" "OTHER" "" 3>&1 1>&2 2>&3)
         exitIfCancel "You must select a path." "partDisks"
         if [ "$result" = "OTHER" ]; then
             local IFS=' '
@@ -167,15 +167,14 @@ mountPart() {
             exitIfCancel "You must enter a path." "partDisks"
             bootPath=$(echo $result | sed 's/^\///g')
             mkdir -p "/mnt/$bootPath"
-            while [[ ! -d "/mnt/$result" ]]; do
+            while [[ ! -d "/mnt/$bootPath" ]]; do
                 result=$(whiptail --inputbox "Path isn't valid. Please try again" 0 0 3>&1 1>&2 2>&3)
                 exitIfCancel "You must enter a path." "partDisks"
                 bootPath=$(echo $result | sed 's/^\///g')
                 mkdir -p "/mnt/$bootPath"
             done
-            result=$bootPath
         fi
-        mount "$bootPart" "/mnt/$result" 2>&1 | debug
+        mount "$bootPart" "/mnt/$bootPath" 2>&1 | debug
     else
         mkdir -p /mnt/boot/efi 
         mount "$bootPart" /mnt/boot/efi 2>&1 | debug
