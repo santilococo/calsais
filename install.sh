@@ -447,7 +447,7 @@ getDotfiles() {
 }
 
 checkForGraphicalInterface() {
-    calcWidthAndRun "whiptail --infobox \"Waiting for archiso to finish its tasks (reflector and graphical interface).\" 7 WIDTH"
+    calcHeightAndRun "whiptail --infobox \"Waiting for archiso to finish its tasks (reflector and graphical interface). This may take a while, please wait.\" HEIGTH 61"
     journalctl --sync
     result=$(journalctl -b -q -r -g "Graphical" | wc -l)
     while [ $result -lt 2 ]; do
