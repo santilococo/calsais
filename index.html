@@ -457,7 +457,7 @@ checkForSystemdUnit() {
     systemctl is-active --quiet ${2}
     [ $? -eq 0 ] && return
     forceExit=false
-    calcWidthAndRun "whiptail --infobox \"Waiting for the ${1} to finish.\" 7 WIDTH"
+    calcWidthAndRun "whiptail --infobox \"Waiting for the ${1} to finish. Please wait.\" 7 WIDTH"
     systemctl is-active --quiet ${2}
     while [ $? -ne 0 ] && [ $forceExit = false ]; do
         sleep 1
