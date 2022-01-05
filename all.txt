@@ -1,0 +1,2 @@
+username=marianito
+bootPath=boot/efi
