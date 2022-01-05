@@ -185,12 +185,14 @@ mountPart() {
         fi
         mount "$bootPart" "/mnt/$bootPath" 2>&1 | debug
     else
-        mkdir -p /mnt/boot/efi 
-        mount "$bootPart" /mnt/boot/efi 2>&1 | debug
+        bootPath="boot/efi"
+        mkdir -p /mnt/$bootPath 
+        mount "$bootPart" /mnt/$bootPath 2>&1 | debug
     fi
     printWaitBox
     [ -n "$swapPart" ] && swapon "$swapPart" 2>&1 | debug
     [ -n "$swapfile" ] && createSwapfile
+    saveVar "bootPath" "/$bootPath"
 }
 
 debug() {
@@ -394,21 +396,32 @@ updateMirrors() {
 }
 
 grubSetUp() {
-    # TODO: Prompt user for efi-directory
     printWaitBox
-    runInChroot "grub-install --target=x86_64-efi --efi-directory=/boot/efi --bootloader-id=GRUB; grub-mkconfig -o /boot/grub/grub.cfg" 2>&1 | debug
+    [ -z $bootPath ] && loadVar "bootPath"
+    runInChroot "grub-install --target=x86_64-efi --efi-directory=${bootPath} --bootloader-id=GRUB; grub-mkconfig -o /boot/grub/grub.cfg" 2>&1 | debug
 }
 
-saveUsername() {
-    echo $username > CocoASAIS.vars
+saveVar() {
+    [ ! -f "CocoASAIS.vars" ] && touch CocoASAIS.vars
+    if [ -z "$(grep "$1" CocoASAIS.vars)" ]; then
+        echo "$1=$2" >> CocoASAIS.vars
+    else
+        sed -i "s|$1=.*|$1=$2|" CocoASAIS.vars
+    fi
 }
 
-loadUsername() {
-    username=$(cat CocoASAIS.vars)
+loadVar() {
+    var=$(grep "$1=" CocoASAIS.vars | cut -d= -f2)
+    if [ -z $var ]; then
+        echo "Couldn't load '$1'. Try to run the script again." 1>&2
+        rm -f CocoASAIS.log CocoASAIS.vars
+        exit 1
+    fi
+    export $1=$var
 }
 
 userSetUp() {
-    username=$(whiptail --inputbox "Enter the new username." 0 0 3>&1 1>&2 2>&3) && saveUsername
+    username=$(whiptail --inputbox "Enter the new username." 0 0 3>&1 1>&2 2>&3) && saveVar "username" "$username"
     exitIfCancel "You must enter an username." "userSetUp"
     askForPassword "${username}" "userSetUp"
     runInChroot "useradd -m ${username};echo \"${username}:${password}\" | chpasswd; sed -i 's/# %wheel ALL=(ALL) ALL/%wheel ALL=(ALL) ALL/' /etc/sudoers; usermod -aG wheel ${username}"
@@ -426,7 +439,7 @@ EOF
 
 installOtherPackages() {
     calcHeightAndRun "whiptail --msgbox \"Now, we will install a few more packages (in the background). Press OK and wait (it may take some time).\" HEIGHT 60 3>&1 1>&2 2>&3"
-    [ -z $username ] && loadUsername
+    [ -z $username ] && loadVar "username"
     getThePackages "S" "installOtherPackages"
     checkForParu
     getThePackages "N" "installOtherPackages"
@@ -437,7 +450,7 @@ installOtherPackages() {
 finishInstallation() {
     cp CocoASAIS /mnt/usr/bin/CocoASAIS
     echo "sh /usr/bin/CocoASAIS && logout" >> /mnt/home/slococo/.bashrc
-    rm /mnt/cocoScript
+    rm -f /mnt/cocoScript
     umount -R /mnt
     whiptail --yesno "Finally, the PC needs to restart, would you like to restart now?" 0 0
     if [ $? -eq 0 ]; then
@@ -485,6 +498,10 @@ checkForSystemdUnit() {
     fi
     trap - INT
 }
+
+# createVarsFile() {
+#     echo ""
+# }
 
 steps=(
     checkUefi
@@ -548,6 +565,7 @@ runScript() {
     fi
 
     whiptail --title "CocoASAIS" --msgbox "${welcomeMsg}" 0 0
+    createVarsFile
 
     while [ $i -le "${#steps[@]}" ]; do
         ${steps[$i]}
