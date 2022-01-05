@@ -42,6 +42,10 @@ exitIfCancel() {
     fi
 }
 
+printWaitBox() {
+    whiptail --infobox "Please wait..." 7 19
+}
+
 partDisks() {
     whiptail --yesno "Do you want me to automatically partition and format a disk for you?" 0 0
     whipStatus=$?
@@ -111,9 +115,11 @@ partDisks() {
             fi
         fi
 
+        printWaitBox
         autoPart
     fi
 
+    printWaitBox
     formatPart
     mountPart
 }
@@ -182,6 +188,7 @@ mountPart() {
         mkdir -p /mnt/boot/efi 
         mount "$bootPart" /mnt/boot/efi 2>&1 | debug
     fi
+    printWaitBox
     [ -n "$swapPart" ] && swapon "$swapPart" 2>&1 | debug
     [ -n "$swapfile" ] && createSwapfile
 }
@@ -251,6 +258,7 @@ checkForParu() {
     commOutput=$(runInChroot "command -v paru > /dev/null 2>&1 || echo 1")
     if [ "$commOutput" = "1" ]; then
         runInChroot "sed -i 's/# %wheel ALL=(ALL) NOPASSWD: ALL/%wheel ALL=(ALL) NOPASSWD: ALL/' /etc/sudoers"
+        printWaitBox
         runInChroot "cd /tmp; sudo -u $username git clone https://aur.archlinux.org/paru-bin.git; cd paru-bin; sudo -u $username makepkg -si --noconfirm; cd ..; rm -rf paru-bin" 2>&1 | debug
     fi
 }
@@ -258,6 +266,7 @@ checkForParu() {
 getThePackages() {
     set -o pipefail
     if [ ! -f "packages.csv" ]; then
+        printWaitBox
         curl -LO "https://raw.githubusercontent.com/santilococo/CocoASAIS/master/packages.csv" 2>&1 | debug
     fi
     local IFS=,
@@ -276,6 +285,7 @@ installImportantPackages() {
 }
 
 generateFstab() {
+    printWaitBox
     genfstab -U /mnt >> /mnt/etc/fstab
 }
 
@@ -290,12 +300,14 @@ setTimeZone() {
     exitIfCancel "You must select a city." "setTimeZone"
 
     ln -sf /mnt/usr/share/zoneinfo/${region}/${city} /mnt/etc/localtime
+    printWaitBox
     runInChroot "hwclock --systohc"
 }
 
 setLocale() {
     # TODO: Let the user choose a locale
     sed 's/#en_US.UTF-8 UTF-8/en_US.UTF-8 UTF-8/' -i /mnt/etc/locale.gen
+    printWaitBox
     runInChroot "locale-gen" 2>&1 | debug
     echo "LANG=en_US.UTF-8" > /mnt/etc/locale.conf
 }
@@ -374,6 +386,7 @@ updateMirrors() {
         countries=$(whiptail --title "Countries" --checklist "" 0 0 0 "${options[@]}" 3>&1 1>&2 2>&3)
         [ -z "$countries" ] && logAndExit "You must select at least one country." "updateMirrors"
         countriesFmt=$(echo "$countries" | sed -r 's/" "/,/g')
+        printWaitBox
         reflector --country \"${countriesFmt//\"/}\" --protocol https --sort rate --save /etc/pacman.d/mirrorlist 2>&1 | debug
     else
         checkForSystemdUnit "mirrors update" "reflector.service" "oneshot"
@@ -382,6 +395,7 @@ updateMirrors() {
 
 grubSetUp() {
     # TODO: Prompt user for efi-directory
+    printWaitBox
     runInChroot "grub-install --target=x86_64-efi --efi-directory=/boot/efi --bootloader-id=GRUB; grub-mkconfig -o /boot/grub/grub.cfg" 2>&1 | debug
 }
 
