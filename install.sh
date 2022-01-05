@@ -377,7 +377,7 @@ updateMirrors() {
     calcHeightAndRun "whiptail --msgbox \"Now, we will update the mirror list by taking the most recently synchronized HTTPS mirrors sorted by download rate.\" HEIGHT 65"
     whiptail --yesno "Would you like to choose your closest countries to narrow the search?" 0 0
     if [ $? -eq 0 ]; then
-        systemctl stop reflector.service
+        systemctl stop reflector.service 2>&1 | debug
         cp /etc/pacman.d/mirrorlist /etc/pacman.d/mirrorlist.backup
         curl -o /etc/pacman.d/mirrorlist.pacnew https://archlinux.org/mirrorlist/all/ 2>&1 | debug
         local IFS=$'\n'
@@ -387,7 +387,7 @@ updateMirrors() {
         [ -z "$countries" ] && logAndExit "You must select at least one country." "updateMirrors"
         countriesFmt=$(echo "$countries" | sed -r 's/" "/,/g')
         printWaitBox
-        reflector --country \"${countriesFmt//\"/}\" --protocol https --sort rate --save /etc/pacman.d/mirrorlist 2>&1 | debug
+        reflector --country "${countriesFmt//\"/}" --protocol https --sort rate --save /etc/pacman.d/mirrorlist 2>&1 | debug
     else
         checkForSystemdUnit "mirrors update" "reflector.service" "oneshot"
     fi
