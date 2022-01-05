@@ -376,7 +376,7 @@ updateMirrors() {
         countriesFmt=$(echo "$countries" | sed -r 's/" "/,/g')
         reflector --country \"${countriesFmt//\"/}\" --protocol https --sort rate --save /etc/pacman.d/mirrorlist 2>&1 | debug
     else
-        checkForSystemdUnit "mirrors update" "reflector.service"
+        checkForSystemdUnit "mirrors update" "reflector.service" "oneshot"
     fi
 }
 
@@ -454,15 +454,21 @@ getDotfiles() {
 
 checkForSystemdUnit() {
     trap 'systemctl stop ${2}; forceExit=true' INT
-    systemctl is-active --quiet ${2}
-    [ $? -eq 0 ] && return
     forceExit=false
     calcWidthAndRun "whiptail --infobox \"Waiting for the ${1} to finish. Please wait.\" 7 WIDTH"
-    systemctl is-active --quiet ${2}
-    while [ $? -ne 0 ] && [ $forceExit = false ]; do
-        sleep 1
+    if [ "${3}" = "oneshot" ]; then
         systemctl is-active --quiet ${2}
-    done
+        while [ $? -ne 0 ] && [ $forceExit = false ]; do
+            sleep 1
+            systemctl is-active --quiet ${2}
+        done
+    else
+        while [ $forceExit = false ]; do
+            result=$(systemctl show -p ActiveState --value ${2})
+            [ "$result" = "activating" ] && break
+            sleep 1
+        done
+    fi
     trap - INT
 }
 
