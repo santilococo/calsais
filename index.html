@@ -457,16 +457,16 @@ checkForSystemdUnit() {
     forceExit=false
     calcWidthAndRun "whiptail --infobox \"Waiting for the ${1} to finish. Please wait.\" 7 WIDTH"
     if [ "${3}" = "oneshot" ]; then
-        systemctl is-active --quiet ${2}
-        while [ $? -ne 0 ] && [ $forceExit = false ]; do
-            sleep 1
-            systemctl is-active --quiet ${2}
-        done
-    else
         while [ $forceExit = false ]; do
             result=$(systemctl show -p ActiveState --value ${2})
             [ "$result" = "activating" ] && break
             sleep 1
+        done
+    else
+        systemctl is-active --quiet ${2}
+        while [ $? -ne 0 ] && [ $forceExit = false ]; do
+            sleep 1
+            systemctl is-active --quiet ${2}
         done
     fi
     trap - INT
