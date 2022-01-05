@@ -454,8 +454,8 @@ getDotfiles() {
 
 checkForSystemdUnit() {
     trap 'systemctl stop ${2}' INT
-    # systemctl is-active --quiet ${2}
-    # [ $? -eq 0 ] && return
+    systemctl is-active --quiet ${2}
+    [ $? -eq 0 ] && return
     calcHeightAndRun "whiptail --infobox \"Waiting for the ${1} to finish.\" 7 WIDTH"
     systemctl is-active --quiet ${2}
     while [ $? -ne 0 ]; do
@@ -522,7 +522,7 @@ runScript() {
     else
         systemctl stop reflector.service
         checkForSystemdUnit "systemd units" "graphical.target"
-        systemctl start reflector.service
+        systemctl start reflector.service &
         welcomeMsg="Welcome to CocoASAIS!"
     fi
 
