@@ -459,7 +459,7 @@ checkForSystemdUnit() {
     if [ "${3}" = "oneshot" ]; then
         while [ $forceExit = false ]; do
             result=$(systemctl show -p ActiveState --value ${2})
-            [ "$result" = "activating" ] && break
+            [ "$result" = "inactive" ] && break
             sleep 1
         done
     else
