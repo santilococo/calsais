@@ -32,7 +32,7 @@ logAndExit() {
         printf "%d", (x == int(x)) ? x : int(x) + 1
     }')
     whiptail --msgbox "$str" $((5+height)) 60 3>&1 1>&2 2>&3
-    echo ${2} > CocoASAIS.log
+    saveVar "lastStep" "${2}"
     exit 1
 }
 
@@ -397,7 +397,7 @@ updateMirrors() {
 
 grubSetUp() {
     printWaitBox
-    [ -z $bootPath ] && loadVar "bootPath"
+    [ -z $bootPath ] && tryLoadVar "bootPath"
     runInChroot "grub-install --target=x86_64-efi --efi-directory=${bootPath} --bootloader-id=GRUB; grub-mkconfig -o /boot/grub/grub.cfg" 2>&1 | debug
 }
 
@@ -412,12 +412,16 @@ saveVar() {
 
 loadVar() {
     var=$(grep "$1=" CocoASAIS.vars | cut -d= -f2)
-    if [ -z $var ]; then
+    export $1=$var
+}
+
+tryLoadVar() {
+    loadVar $1
+    if [ -z ${!1} ]; then
         echo "Couldn't load '$1'. Try to run the script again." 1>&2
-        rm -f CocoASAIS.log CocoASAIS.vars
+        rm -f CocoASAIS.vars
         exit 1
     fi
-    export $1=$var
 }
 
 userSetUp() {
@@ -439,7 +443,7 @@ EOF
 
 installOtherPackages() {
     calcHeightAndRun "whiptail --msgbox \"Now, we will install a few more packages (in the background). Press OK and wait (it may take some time).\" HEIGHT 60 3>&1 1>&2 2>&3"
-    [ -z $username ] && loadVar "username"
+    [ -z $username ] && tryLoadVar "username"
     getThePackages "S" "installOtherPackages"
     checkForParu
     getThePackages "N" "installOtherPackages"
@@ -537,8 +541,8 @@ runScript() {
     fi
 
     i=0; found=false
-    if [ -f "CocoASAIS.log" ]; then
-        lastStep=$(cat CocoASAIS.log)
+    loadVar "lastStep"
+    if [ -n "$lastStep" ]; then
         for item in "${steps[@]}"; do
             if [ "$item" = "$lastStep" ]; then
                 found=true
