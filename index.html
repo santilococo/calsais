@@ -185,7 +185,7 @@ mountPart() {
         mount "$bootPart" "/mnt/$bootPath" 2>&1 | debug
     else
         bootPath="boot/efi"
-        mkdir -p /mnt/$bootPath 
+        mkdir -p /mnt/$bootPath
         mount "$bootPart" /mnt/$bootPath 2>&1 | debug
     fi
     printWaitBox
@@ -209,7 +209,7 @@ debug() {
 installPackage() {
     calcWidthAndRun "whiptail --infobox \"Installing '$1'.\" 7 WIDTH"
     case ${3} in
-        A)  
+        A)
             if [ $debugFlagToStdout = true ] || [ $debugFlag = true ]; then
                 script -qec "pacstrap /mnt --needed ${1}" /dev/null 2>&1 | debug
             else
@@ -229,7 +229,7 @@ installPackage() {
                 runInChroot "pacman -S $flag --noconfirm ${1}" 2>&1 | debug
             fi
             ;;
-        C)  
+        C)
             flag=""
             if [ "$2" != "R" ]; then
                 runInChroot "sudo -u $username paru -Q ${1}" 2>&1 | debug
@@ -458,7 +458,7 @@ finishInstallation() {
     whiptail --yesno "Finally, the PC needs to restart, would you like to restart now?" 0 0
     if [ $? -eq 0 ]; then
         reboot
-    else 
+    else
         clear
     fi
 }
