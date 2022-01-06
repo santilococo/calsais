@@ -565,7 +565,7 @@ runScript() {
 
     whiptail --title "CocoASAIS" --msgbox "${welcomeMsg}" 0 0
 
-    while [ $i -le "${#steps[@]}" ]; do
+    while [ $i -lt "${#steps[@]}" ]; do
         step=${steps[$i]}
         saveVar "lastStep" "$step"
         $step
