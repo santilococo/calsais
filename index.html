@@ -32,7 +32,6 @@ logAndExit() {
         printf "%d", (x == int(x)) ? x : int(x) + 1
     }')
     whiptail --msgbox "$str" $((5+height)) 60 3>&1 1>&2 2>&3
-    saveVar "lastStep" "${2}"
     exit 1
 }
 
@@ -567,7 +566,9 @@ runScript() {
     whiptail --title "CocoASAIS" --msgbox "${welcomeMsg}" 0 0
 
     while [ $i -le "${#steps[@]}" ]; do
-        ${steps[$i]}
+        step=${steps[$i]}
+        saveVar "lastStep" "$step"
+        $step
         ((i++))
     done
 }
