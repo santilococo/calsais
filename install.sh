@@ -484,6 +484,11 @@ getDotfiles() {
 
 checkForSystemdUnit() {
     trap 'systemctl stop ${2}; forceExit=true' INT
+    if [ "${3}" = "oneshot" ]; then
+        [ "$(systemctl show -p ActiveState --value ${2})" = "inactive" ] && return
+    else
+        systemctl is-active --quiet ${2} && return
+    fi
     forceExit=false
     calcWidthAndRun "whiptail --infobox \"Waiting for the ${1} to finish. Please wait.\" 7 WIDTH"
     if [ "${3}" = "oneshot" ]; then
