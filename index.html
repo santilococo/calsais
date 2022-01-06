@@ -15,7 +15,7 @@ formatOptions() {
 checkUefi() {
     ls /sys/firmware/efi/efivars > /dev/null 2>&1
     if [ $? -ge 1 ]; then
-        logAndExit "This scripts supports only UEFI boot mode." "checkUefi"
+        printAndExit "This scripts supports only UEFI boot mode."
     fi
 }
 
@@ -23,7 +23,7 @@ updateSystemClock() {
     timedatectl set-ntp true
 }
 
-logAndExit() {
+printAndExit() {
     str="${1} Therefore, the installation process will stop, but you can continue where you left off by running:\n\nsh CocoASAIS"
     newlines=$(printf "$str" | grep -c $'\n')
     chars=$(echo "$str" | wc -c)
@@ -37,7 +37,7 @@ logAndExit() {
 
 exitIfCancel() {
     if [ $? -eq 1 ]; then
-        logAndExit "$@"
+        printAndExit "$@"
     fi
 }
 
@@ -53,7 +53,7 @@ partDisks() {
     setDelimiters ""
     formatOptions $(lsblk -dpnlo NAME,SIZE -e 7,11)
     result=$(whiptail --title "Select the disk." --menu "" 0 0 0 "${options[@]}" 3>&1 1>&2 2>&3)
-    exitIfCancel "You must select a disk." "partDisks"
+    exitIfCancel "You must select a disk."
     disk=$(echo $result | cut -d' ' -f1)
 
     if [ $whipStatus -eq 1 ]; then
@@ -62,16 +62,16 @@ partDisks() {
         # TODO: Let the user choose the program
         gdisk $disk
         parts=$(lsblk $disk -pnl | sed -n '2~1p' | wc -l)
-        [ $parts -lt 2 ] && logAndExit "You must at least create boot and root partitions." "partDisks"
+        [ $parts -lt 2 ] && printAndExit "You must at least create boot and root partitions."
 
         # TODO: Ask for home partition
         formatOptions $(lsblk ${disk} -pnlo NAME,SIZE,MOUNTPOINTS | sed -n '2~1p')
         result=$(whiptail --title "Select the boot partition." --menu "" 0 0 0 "${options[@]}" 3>&1 1>&2 2>&3)
-        exitIfCancel "You must select the boot partition." "partDisks"
+        exitIfCancel "You must select the boot partition."
         bootPart=$(echo $result | cut -d' ' -f1)
         formatOptions $(lsblk ${disk} -pnlo NAME,SIZE,MOUNTPOINTS | sed -n '2~1p' | awk '$0!~v' v="$bootPart")
         result=$(whiptail --title "Select the root partition." --menu "" 0 0 0 "${options[@]}" 3>&1 1>&2 2>&3)
-        exitIfCancel "You must select the root partition." "partDisks"
+        exitIfCancel "You must select the root partition."
         rootPart=$(echo $result | cut -d' ' -f1)
 
         parts=$(lsblk $disk -pnl | sed -n '2~1p' | awk '$0!~v' v="$bootPart|$rootPart" | wc -l)
@@ -80,7 +80,7 @@ partDisks() {
             if [ $? -eq 0 ]; then
                 formatOptions $(lsblk ${disk} -pnlo NAME,SIZE,MOUNTPOINTS | sed -n '2~1p' | awk '$0!~v' v="$bootPart|$rootPart")
                 result=$(whiptail --title "Select the swap partition." --menu "" 0 0 0 "${options[@]}" 3>&1 1>&2 2>&3)
-                exitIfCancel "You must select the swap partition." "partDisks"
+                exitIfCancel "You must select the swap partition."
                 swapPart=$(echo $result | cut -d' ' -f1)
             else
                 whiptail --yesno "Do you want to create a swapfile?" 0 0
@@ -104,7 +104,7 @@ partDisks() {
         whiptail --yesno "Do you want to create a swap space?" 0 0
         if [ $? -eq 0 ]; then
             result=$(whiptail --title "Select the swap space." --menu "" 0 0 0 "Partition" "" "Swapfile" "" 3>&1 1>&2 2>&3)
-            exitIfCancel "You must select a swap space." "partDisks"
+            exitIfCancel "You must select a swap space."
             size=$(getSize "${result:l}")
             if [ "$result" = "Partition" ]; then
                 swapPart=${disk}2
@@ -125,11 +125,11 @@ partDisks() {
 
 getSize() {
     sizeStr=$(whiptail --inputbox "Enter the size of the ${1} (in GB)." 0 0 3>&1 1>&2 2>&3)
-    exitIfCancel "You must enter a size." "partDisks"
+    exitIfCancel "You must enter a size."
     size=$(echo "$sizeStr" | grep -Eo '[-]?[0-9]+([.,]?[0-9]+)?' | head -n1 | sed 's/,/./g' | awk '{ print int($1 * 1024) }')
     while [ $(echo $size | awk '{ print $1 <= 0 }') -eq 1 ]; do
         sizeStr=$(whiptail --inputbox "Size cannot be less than or equal to zero. Please enter a new size." 0 0 3>&1 1>&2 2>&3)
-        exitIfCancel "You must enter a size." "partDisks"
+        exitIfCancel "You must enter a size."
         size=$(echo "$sizeStr" | grep -Eo '[-]?[0-9]+([.,]?[0-9]+)?' | head -n1 | sed 's/,/./g' | awk '{ print int($1 * 1024) }')
     done
     echo $size
@@ -165,17 +165,17 @@ mountPart() {
     mount "$rootPart" /mnt 2>&1 | debug
     if [ $autoSelection = false ]; then
         result=$(whiptail --title "Select where to mount boot partition." --menu "" 0 0 0 "/boot/efi" "" "/boot" "" "==OTHER==" "" 3>&1 1>&2 2>&3)
-        exitIfCancel "You must select a path." "partDisks"
+        exitIfCancel "You must select a path."
         bootPath=$(echo $result | sed 's/^\///g')
         if [ "$result" = "OTHER" ]; then
             local IFS=' '
             result=$(whiptail --inputbox "Enter the absolute path." 0 0 3>&1 1>&2 2>&3)
-            exitIfCancel "You must enter a path." "partDisks"
+            exitIfCancel "You must enter a path."
             bootPath=$(echo $result | sed 's/^\///g')
             mkdir -p "/mnt/$bootPath"
             while [[ ! -d "/mnt/$bootPath" ]]; do
                 result=$(whiptail --inputbox "Path isn't valid. Please try again" 0 0 3>&1 1>&2 2>&3)
-                exitIfCancel "You must enter a path." "partDisks"
+                exitIfCancel "You must enter a path."
                 bootPath=$(echo $result | sed 's/^\///g')
                 mkdir -p "/mnt/$bootPath"
             done
@@ -249,10 +249,10 @@ installPackage() {
             runInChroot "cd /tmp; sudo -u $username git clone https://github.com/${1}; cd ${pkgName}; sudo -u $username makepkg -si --noconfirm; cd ..; rm -rf ${pkgName}" 2>&1 | debug
             ;;
         ?)
-            logAndExit "INSTALL must be A, B, C or D in packages.csv file." "${4}"
+            printAndExit "INSTALL must be A, B, C or D in packages.csv file."
             ;;
     esac
-    exitIfCancel "Package installation failed." "${4}"
+    exitIfCancel "Package installation failed."
 }
 
 checkForParu() {
@@ -295,10 +295,10 @@ setTimeZone() {
     setDelimiters ""
     formatOptions $(ls -l /usr/share/zoneinfo/ | grep '^d' | awk '{printf $9" \n"}' | awk '!/posix/ && !/right/')
     region=$(whiptail --title "Region" --menu "" 0 0 0 "${options[@]}" 3>&1 1>&2 2>&3)
-    exitIfCancel "You must select a region." "setTimeZone"
+    exitIfCancel "You must select a region."
     formatOptions $(ls -l /usr/share/zoneinfo/${region} | grep -v '^d' | awk '{printf $9" \n"}')
     city=$(whiptail --title "City" --menu "" 0 0 0 "${options[@]}" 3>&1 1>&2 2>&3)
-    exitIfCancel "You must select a city." "setTimeZone"
+    exitIfCancel "You must select a city."
 
     ln -sf /mnt/usr/share/zoneinfo/${region}/${city} /mnt/etc/localtime
     printWaitBox
@@ -315,7 +315,7 @@ setLocale() {
 
 networkConf() {
     hostname=$(whiptail --inputbox "Enter the hostname." 0 0 3>&1 1>&2 2>&3)
-    exitIfCancel "You must enter a hostname." "networkConf"
+    exitIfCancel "You must enter a hostname."
     echo "${hostname}" > /mnt/etc/hostname
     echo "
 127.0.0.1   localhost
@@ -356,14 +356,14 @@ calcHeightAndRun() {
 
 askForPassword() {
     password=$(calcWidthAndRun "whiptail --passwordbox \"Now, enter the password for ${1}.\" 8 WIDTH 3>&1 1>&2 2>&3")
-    exitIfCancel "You must enter a password." "${2}"
+    exitIfCancel "You must enter a password."
     passwordRep=$(calcWidthAndRun "whiptail --passwordbox \"Reenter password.\" 8 WIDTH 3>&1 1>&2 2>&3")
-    exitIfCancel "You must enter a password." "${2}"
+    exitIfCancel "You must enter a password."
     while ! [ "$password" = "$passwordRep" ]; do
         password=$(calcWidthAndRun "whiptail --passwordbox \"Passwords do not match! Please enter the password again.\" 8 WIDTH 3>&1 1>&2 2>&3")
-        exitIfCancel "You must enter a password." "${2}"
+        exitIfCancel "You must enter a password."
         passwordRep=$(calcWidthAndRun "whiptail --passwordbox \"Reenter password.\" 8 WIDTH 3>&1 1>&2 2>&3")
-        exitIfCancel "You must enter a password." "${2}"
+        exitIfCancel "You must enter a password."
     done
     unset passwordRep
 }
@@ -385,7 +385,7 @@ updateMirrors() {
         setDelimiters "" "OFF"
         formatOptions $(cat /etc/pacman.d/mirrorlist.pacnew | grep '^##' | cut -d' ' -f2- | sed -n '5~1p')
         countries=$(whiptail --title "Countries" --checklist "" 0 0 0 "${options[@]}" 3>&1 1>&2 2>&3)
-        [ -z "$countries" ] && logAndExit "You must select at least one country." "updateMirrors"
+        [ -z "$countries" ] && printAndExit "You must select at least one country."
         countriesFmt=$(echo "$countries" | sed -r 's/" "/,/g')
         printWaitBox
         reflector --country "${countriesFmt//\"/}" --protocol https --sort rate --save /etc/pacman.d/mirrorlist 2>&1 | debug
@@ -425,7 +425,7 @@ tryLoadVar() {
 
 userSetUp() {
     username=$(whiptail --inputbox "Enter the new username." 0 0 3>&1 1>&2 2>&3) && saveVar "username" "$username"
-    exitIfCancel "You must enter an username." "userSetUp"
+    exitIfCancel "You must enter an username."
     askForPassword "${username}" "userSetUp"
     runInChroot "useradd -m ${username};echo \"${username}:${password}\" | chpasswd; sed -i 's/# %wheel ALL=(ALL) ALL/%wheel ALL=(ALL) ALL/' /etc/sudoers; usermod -aG wheel ${username}"
     unset password
