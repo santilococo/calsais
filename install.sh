@@ -338,7 +338,7 @@ calcWidthAndRun() {
 
 calcHeightAndRun() {
     str=$(echo "$@" | grep -oP '(?<=").*?(?=")')
-    newlines=$(printf '%s' "$str" | grep -c $'\n')
+    newlines=$(printf "$str" | grep -c $'\n')
     chars=$(echo "$str" | wc -c)
     height=$(echo "$chars" "$newlines" | awk '{
         x = (($1 - $2 + ($2 * 60)) / 60)
