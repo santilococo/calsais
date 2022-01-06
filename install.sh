@@ -557,9 +557,9 @@ runScript() {
     if [ $i -gt 0 ]; then
         welcomeMsg="Welcome back to CocoASAIS!"
     else
-        systemctl stop reflector.service
+        systemctl stop reflector.service 2>&1 | debug
         checkForSystemdUnit "systemd units" "graphical.target"
-        systemctl start reflector.service &
+        (systemctl start reflector.service &)
         welcomeMsg="Welcome to CocoASAIS!"
     fi
 
