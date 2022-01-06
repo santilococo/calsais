@@ -567,6 +567,7 @@ runScript() {
 
     while [ $i -lt "${#steps[@]}" ]; do
         step=${steps[$i]}
+        [[ $debugFlagToStdout = true || $debugFlag = true ]] && printf '\n---\n%s\n---\n' "$step" >> CocoASAIS.log
         saveVar "lastStep" "$step"
         $step
         ((i++))
