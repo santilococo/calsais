@@ -198,9 +198,9 @@ debug() {
     if [ $debugFlagToStdout = true ]; then
         tee
     elif [ $debugFlagToFile = true ]; then
-        tee -a CocoASAIS.debug > /dev/null
+        tee -a CocoASAIS.log > /dev/null
     elif [ $debugFlag = true ]; then
-        tee -a CocoASAIS.debug
+        tee -a CocoASAIS.log
     else
         tee > /dev/null
     fi
@@ -523,7 +523,7 @@ runScript() {
     debugFlag=false; debugFlagToFile=false; debugFlagToStdout=false
     while getopts ':hdfs' flag; do
         case $flag in
-            h)  printf 'usage: %s [command]\n\t-h\tPrint this help message.\n\t-d\tDebug to stdout.\n\t-d\tDebug to CocoASAIS.debug file.\n' "${0##*/}" && exit 0 ;;
+            h)  printf 'usage: %s [command]\n\t-h\tPrint this help message.\n\t-s\tDebug to stdout and to CocoASAIS.log file.\n\t-f\tDebug to CocoASAIS.log file.\t-s\tDebug to stdout.\n\n' "${0##*/}" && exit 0 ;;
             d)  debugFlag=true ;;
             f)  debugFlagToFile=true ;;
             s)  debugFlagToStdout=true ;;
