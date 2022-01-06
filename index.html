@@ -502,6 +502,14 @@ checkForSystemdUnit() {
     trap - INT
 }
 
+printStepIfDebug() {
+    if [ $debugFlagToFile = true ] || [ $debugFlag = true ]; then
+        printf '\n%s' "============================================================" >> CocoASAIS.log
+        printf '\n%s\n' "$step" >> CocoASAIS.log
+        printf '%s\n' "============================================================" >> CocoASAIS.log
+    fi
+}
+
 steps=(
     checkUefi
     updateSystemClock
@@ -567,7 +575,7 @@ runScript() {
 
     while [ $i -lt "${#steps[@]}" ]; do
         step=${steps[$i]}
-        [[ $debugFlagToStdout = true || $debugFlag = true ]] && printf '\n---\n%s\n---\n' "$step" >> CocoASAIS.log
+        printStepIfDebug
         saveVar "lastStep" "$step"
         $step
         ((i++))
