@@ -499,10 +499,6 @@ checkForSystemdUnit() {
     trap - INT
 }
 
-# createVarsFile() {
-#     echo ""
-# }
-
 steps=(
     checkUefi
     updateSystemClock
@@ -565,7 +561,6 @@ runScript() {
     fi
 
     whiptail --title "CocoASAIS" --msgbox "${welcomeMsg}" 0 0
-    createVarsFile
 
     while [ $i -le "${#steps[@]}" ]; do
         ${steps[$i]}
