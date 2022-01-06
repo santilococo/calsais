@@ -259,6 +259,7 @@ checkForParu() {
     commOutput=$(runInChroot "command -v paru > /dev/null 2>&1 || echo 1")
     if [ "$commOutput" = "1" ]; then
         runInChroot "sed -i 's/# %wheel ALL=(ALL) NOPASSWD: ALL/%wheel ALL=(ALL) NOPASSWD: ALL/' /etc/sudoers"
+        checkSudoers
         printWaitBox
         runInChroot "cd /tmp; sudo -u $username git clone https://aur.archlinux.org/paru-bin.git; cd paru-bin; sudo -u $username makepkg -si --noconfirm; cd ..; rm -rf paru-bin" 2>&1 | debug
     fi
@@ -417,7 +418,7 @@ loadVar() {
 tryLoadVar() {
     loadVar $1
     if [ -z ${!1} ]; then
-        echo "Couldn't load '$1'. Try to run the script again." 1>&2
+        calcWidthAndRun "whiptail --msgbox \"Couldn't load '$1'. Try to run the script again.\" 7 WIDTH"
         rm -f CocoASAIS.vars
         exit 1
     fi
@@ -427,7 +428,9 @@ userSetUp() {
     username=$(whiptail --inputbox "Enter the new username." 0 0 3>&1 1>&2 2>&3) && saveVar "username" "$username"
     exitIfCancel "You must enter an username."
     askForPassword "${username}" "userSetUp"
-    runInChroot "useradd -m ${username};echo \"${username}:${password}\" | chpasswd; sed -i 's/# %wheel ALL=(ALL) ALL/%wheel ALL=(ALL) ALL/' /etc/sudoers; usermod -aG wheel ${username}"
+    runInChroot "useradd -m ${username};echo \"${username}:${password}\" | chpasswd; usermod -aG wheel ${username}"
+    runInChroot "sed -i 's/# %wheel ALL=(ALL) ALL/%wheel ALL=(ALL) ALL/' /etc/sudoers"
+    checkSudoers
     unset password
 }
 
@@ -440,6 +443,15 @@ EOF
     return $?
 }
 
+checkSudoers() {
+    runInChroot "visudo -c" 2>&1 | debug
+    if [ $? -ne 0 ]; then
+        calcWidthAndRun "whiptail --msgbox \"Sudoers check failed. Try to run the script again.\" 7 WIDTH"
+        cp /etc/sudoers /mnt/etc/sudoers
+        exit 1
+    fi
+}
+
 installOtherPackages() {
     calcHeightAndRun "whiptail --msgbox \"Now, we will install a few more packages (in the background). Press OK and wait (it may take some time).\" HEIGHT 60 3>&1 1>&2 2>&3"
     [ -z $username ] && tryLoadVar "username"
@@ -448,6 +460,7 @@ installOtherPackages() {
     getThePackages "N" "installOtherPackages"
     getThePackages "R" "installOtherPackages"
     runInChroot "sed -i 's/^%wheel ALL=(ALL) NOPASSWD: ALL/# %wheel ALL=(ALL) NOPASSWD: ALL/' /etc/sudoers"
+    checkSudoers
 }
 
 finishInstallation() {
