@@ -124,7 +124,7 @@ partDisks() {
 }
 
 getSize() {
-    sizeStr=$(whiptail --inputbox "Enter the size of the ${1} (in GB)." 0 0 3>&1 1>&2 2>&3)
+    sizeStr=$(whiptail --inputbox "Enter the size of the ${1} (in GB, for example 1.5GB)." 0 0 3>&1 1>&2 2>&3)
     exitIfCancel "You must enter a size."
     size=$(echo "$sizeStr" | grep -Eo '[-]?[0-9]+([.,]?[0-9]+)?' | head -n1 | sed 's/,/./g' | awk '{ print int($1 * 1024) }')
     while [ $(echo $size | awk '{ print $1 <= 0 }') -eq 1 ]; do
@@ -333,7 +333,7 @@ calcWidthAndRun() {
     fi
     commOutput=$(eval $comm)
     exitStatus=$?
-    [ ! -z $commOutput ] && echo $commOutput
+    [ -n $commOutput ] && echo $commOutput
     return $exitStatus
 }
 
@@ -351,7 +351,7 @@ calcHeightAndRun() {
     fi
     commOutput=$(eval $comm)
     exitStatus=$?
-    [ ! -z $commOutput ] && echo $commOutput
+    [ -n $commOutput ] && echo $commOutput
     return $exitStatus
 }
 
@@ -476,12 +476,6 @@ finishInstallation() {
     fi
 }
 
-zshConfig() {
-    # TODO: Choose between zsh-theme-powerlevel10k-git (AUR) and zsh-theme-powerlevel10k (community)
-    mkdir -p $HOME/.cache/zsh
-    touch $HOME/.cache/zsh/.histfile
-}
-
 getDotfiles() {
     zshConfig
     local lastFolder=$(pwd -P)
@@ -492,6 +486,8 @@ getDotfiles() {
     cd $lastFolder
 
     sudo rm -f ~/.bashrc /usr/bin/CocoASAIS
+    mkdir -p $HOME/.cache/zsh
+    touch $HOME/.cache/zsh/.histfile
     chsh -s $(which zsh)
 }
 
