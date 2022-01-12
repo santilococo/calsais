@@ -54,34 +54,35 @@ partDisks() {
     formatOptions $(lsblk -dpnlo NAME,SIZE -e 7,11)
     result=$(whiptail --title "Select the disk." --menu "" 0 0 0 "${options[@]}" 3>&1 1>&2 2>&3)
     exitIfCancel "You must select a disk."
-    disk=$(echo $result | cut -d' ' -f1)
+    disk=$(echo "$result" | cut -d' ' -f1)
 
     if [ $whipStatus -eq 1 ]; then
         autoSelection=false
-        calcHeightAndRun "whiptail --msgbox \"You will partition the disk yourself with gdisk and then, when finished, you will continue with the installation.\" HEIGHT 62 3>&1 1>&2 2>&3"
-        # TODO: Let the user choose the program
-        gdisk $disk
-        parts=$(lsblk $disk -pnl | sed -n '2~1p' | wc -l)
-        [ $parts -lt 2 ] && printAndExit "You must at least create boot and root partitions."
+        calcHeightAndRun "whiptail --msgbox \"You will partition the disk yourself and then, when finished, you will continue with the installation.\" HEIGHT 62"
+        partTool=$(whiptail --title "Select the partitioning tool." --menu "" 0 0 0 "fdisk" "" "sfdisk" "" "cfdisk" "" "gdisk" "" "cgdisk" "" "sgdisk" "" 3>&1 1>&2 2>&3)
+        exitIfCancel "You must select a partitioning tool."
+        $partTool "$disk"
+        parts=$(lsblk "$disk" -pnl | sed -n '2~1p' | wc -l)
+        [ "$parts" -lt 2 ] && printAndExit "You must at least create boot and root partitions."
 
         # TODO: Ask for home partition
-        formatOptions $(lsblk ${disk} -pnlo NAME,SIZE,MOUNTPOINTS | sed -n '2~1p')
+        formatOptions $(lsblk "${disk}" -pnlo NAME,SIZE,MOUNTPOINTS | sed -n '2~1p')
         result=$(whiptail --title "Select the boot partition." --menu "" 0 0 0 "${options[@]}" 3>&1 1>&2 2>&3)
         exitIfCancel "You must select the boot partition."
-        bootPart=$(echo $result | cut -d' ' -f1)
-        formatOptions $(lsblk ${disk} -pnlo NAME,SIZE,MOUNTPOINTS | sed -n '2~1p' | awk '$0!~v' v="$bootPart")
+        bootPart=$(echo "$result" | cut -d' ' -f1)
+        formatOptions $(lsblk "${disk}" -pnlo NAME,SIZE,MOUNTPOINTS | sed -n '2~1p' | awk '$0!~v' v="$bootPart")
         result=$(whiptail --title "Select the root partition." --menu "" 0 0 0 "${options[@]}" 3>&1 1>&2 2>&3)
         exitIfCancel "You must select the root partition."
-        rootPart=$(echo $result | cut -d' ' -f1)
+        rootPart=$(echo "$result" | cut -d' ' -f1)
 
-        parts=$(lsblk $disk -pnl | sed -n '2~1p' | awk '$0!~v' v="$bootPart|$rootPart" | wc -l)
-        if [ $parts -gt 0 ]; then
+        parts=$(lsblk "$disk" -pnl | sed -n '2~1p' | awk '$0!~v' v="$bootPart|$rootPart" | wc -l)
+        if [ "$parts" -gt 0 ]; then
             whiptail --yesno "Do you have a swap partition?" 0 0
             if [ $? -eq 0 ]; then
-                formatOptions $(lsblk ${disk} -pnlo NAME,SIZE,MOUNTPOINTS | sed -n '2~1p' | awk '$0!~v' v="$bootPart|$rootPart")
+                formatOptions $(lsblk "${disk}" -pnlo NAME,SIZE,MOUNTPOINTS | sed -n '2~1p' | awk '$0!~v' v="$bootPart|$rootPart")
                 result=$(whiptail --title "Select the swap partition." --menu "" 0 0 0 "${options[@]}" 3>&1 1>&2 2>&3)
                 exitIfCancel "You must select the swap partition."
-                swapPart=$(echo $result | cut -d' ' -f1)
+                swapPart=$(echo "$result" | cut -d' ' -f1)
             else
                 whiptail --yesno "Do you want to create a swapfile?" 0 0
                 if [ $? -eq 0 ]; then
@@ -596,4 +597,4 @@ runScript() {
     done
 }
 
-runScript "$@"
+# runScript "$@"
