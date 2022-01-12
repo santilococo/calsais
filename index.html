@@ -138,21 +138,21 @@ getSize() {
 }
 
 createSwapfile() {
-    dd if=/dev/zero of=$swapfile bs=1M count=${size} status=progress 2>&1 | debug
+    dd if=/dev/zero of=$swapfile bs=1M count="${size}" status=progress 2>&1 | debug
     chmod 600 $swapfile 2>&1 | debug
     mkswap $swapfile 2>&1 | debug
     swapon $swapfile 2>&1 | debug
 }
 
 autoPart() {
-    parted -s $disk mklabel gpt 2>&1 | debug
+    parted -s "$disk" mklabel gpt 2>&1 | debug
 
-    sgdisk $disk -n=1:0:+300M -t=1:ef00 2>&1 | debug
+    sgdisk "$disk" -n=1:0:+300M -t=1:ef00 2>&1 | debug
     if [ -n "$swapPart" ]; then
-        sgdisk $disk -n=2:0:+${size}M -t=2:8200 2>&1 | debug
-        sgdisk $disk -n=3:0:0 2>&1 | debug
+        sgdisk "$disk" -n=2:0:+"${size}"M -t=2:8200 2>&1 | debug
+        sgdisk "$disk" -n=3:0:0 2>&1 | debug
     else
-        sgdisk $disk -n=2:0:0 2>&1 | debug
+        sgdisk "$disk" -n=2:0:0 2>&1 | debug
     fi
 }
 
@@ -168,17 +168,17 @@ mountPart() {
     if [ $autoSelection = false ]; then
         result=$(whiptail --title "Select where to mount boot partition." --menu "" 0 0 0 "/boot/efi" "" "/boot" "" "==OTHER==" "" 3>&1 1>&2 2>&3)
         exitIfCancel "You must select a path."
-        bootPath=$(echo $result | sed 's/^\///g')
+        bootPath=$(echo "$result" | sed 's/^\///g')
         if [ "$result" = "OTHER" ]; then
             local IFS=' '
             result=$(whiptail --inputbox "Enter the absolute path." 0 0 3>&1 1>&2 2>&3)
             exitIfCancel "You must enter a path."
-            bootPath=$(echo $result | sed 's/^\///g')
+            bootPath=$(echo "$result" | sed 's/^\///g')
             mkdir -p "/mnt/$bootPath"
             while [[ ! -d "/mnt/$bootPath" ]]; do
                 result=$(whiptail --inputbox "Path isn't valid. Please try again" 0 0 3>&1 1>&2 2>&3)
                 exitIfCancel "You must enter a path."
-                bootPath=$(echo $result | sed 's/^\///g')
+                bootPath=$(echo "$result" | sed 's/^\///g')
                 mkdir -p "/mnt/$bootPath"
             done
         else
@@ -197,11 +197,11 @@ mountPart() {
 }
 
 debug() {
-    if [ $debugFlagToStdout = true ]; then
+    if [ "$debugFlagToStdout" = true ]; then
         tee
-    elif [ $debugFlagToFile = true ]; then
+    elif [ "$debugFlagToFile" = true ]; then
         tee -a CocoASAIS.log > /dev/null
-    elif [ $debugFlag = true ]; then
+    elif [ "$debugFlag" = true ]; then
         tee -a CocoASAIS.log
     else
         tee > /dev/null
@@ -212,10 +212,10 @@ installPackage() {
     calcWidthAndRun "whiptail --infobox \"Installing '$1'.\" 7 WIDTH"
     case ${3} in
         A)
-            if [ $debugFlagToStdout = true ] || [ $debugFlag = true ]; then
+            if [ "$debugFlagToStdout" = true ] || [ "$debugFlag" = true ]; then
                 script -qec "pacstrap /mnt --needed ${1}" /dev/null 2>&1 | debug
             else
-                pacstrap /mnt --needed ${1} 2>&1 | debug
+                pacstrap /mnt --needed "${1}" 2>&1 | debug
             fi
             ;;
         B)
@@ -225,7 +225,7 @@ installPackage() {
                 [ $? -eq 0 ] && return
                 flag="--needed"
             fi
-            if [ $debugFlagToStdout = true ] || [ $debugFlag = true ]; then
+            if [ "$debugFlagToStdout" = true ] || [ "$debugFlag" = true ]; then
                 runInChroot "script -qec \"pacman -S $flag --noconfirm ${1}\" /dev/null" 2>&1 | debug
             else
                 runInChroot "pacman -S $flag --noconfirm ${1}" 2>&1 | debug
@@ -238,14 +238,14 @@ installPackage() {
                 [ $? -eq 0 ] && return
                 flag="--needed"
             fi
-            if [ $debugFlagToStdout = true ] || [ $debugFlag = true ]; then
+            if [ "$debugFlagToStdout" = true ] || [ "$debugFlag" = true ]; then
                 runInChroot "script -qec \"sudo -u $username paru -S $flag --noconfirm --skipreview ${1}\" /dev/null" 2>&1 | debug
             else
                 runInChroot "sudo -u $username paru -S $flag --noconfirm --skipreview ${1}" 2>&1 | debug
             fi
             ;;
         D)
-            pkgName=$(echo ${1} | grep -oP '(?<=/).*?(?=.git)')
+            pkgName=$(echo "${1}" | grep -oP '(?<=/).*?(?=.git)')
             runInChroot "sudo -u $username paru -Q ${pkgName}" 2>&1 | debug
             [ $? -eq 0 ] && return
             runInChroot "cd /tmp; sudo -u $username git clone https://github.com/${1}; cd ${pkgName}; sudo -u $username makepkg -si --noconfirm; cd ..; rm -rf ${pkgName}" 2>&1 | debug
@@ -299,11 +299,11 @@ setTimeZone() {
     formatOptions $(ls -l /usr/share/zoneinfo/ | grep '^d' | awk '{printf $9" \n"}' | awk '!/posix/ && !/right/')
     region=$(whiptail --title "Region" --menu "" 0 0 0 "${options[@]}" 3>&1 1>&2 2>&3)
     exitIfCancel "You must select a region."
-    formatOptions $(ls -l /usr/share/zoneinfo/${region} | grep -v '^d' | awk '{printf $9" \n"}')
+    formatOptions $(ls -l "/usr/share/zoneinfo/${region}" | grep -v '^d' | awk '{printf $9" \n"}')
     city=$(whiptail --title "City" --menu "" 0 0 0 "${options[@]}" 3>&1 1>&2 2>&3)
     exitIfCancel "You must select a city."
 
-    ln -sf /mnt/usr/share/zoneinfo/${region}/${city} /mnt/etc/localtime
+    ln -sf "/mnt/usr/share/zoneinfo/${region}/${city}" /mnt/etc/localtime
     printWaitBox
     runInChroot "hwclock --systohc"
 }
@@ -333,9 +333,9 @@ calcWidthAndRun() {
     if [[ $comm != *"3>&1 1>&2 2>&3" ]]; then
         comm="${comm} 3>&1 1>&2 2>&3"
     fi
-    commOutput=$(eval $comm)
+    commOutput=$(eval "$comm")
     exitStatus=$?
-    [ -n $commOutput ] && echo $commOutput
+    [ -n "$commOutput" ] && echo "$commOutput"
     return $exitStatus
 }
 
@@ -351,9 +351,9 @@ calcHeightAndRun() {
     if [[ $comm != *"3>&1 1>&2 2>&3" ]]; then
         comm="${comm} 3>&1 1>&2 2>&3"
     fi
-    commOutput=$(eval $comm)
+    commOutput=$(eval "$comm")
     exitStatus=$?
-    [ -n $commOutput ] && echo $commOutput
+    [ -n "$commOutput" ] && echo "$commOutput"
     return $exitStatus
 }
 
@@ -386,8 +386,8 @@ updateMirrors() {
         curl -o /etc/pacman.d/mirrorlist.pacnew https://archlinux.org/mirrorlist/all/ 2>&1 | debug
         local IFS=$'\n'
         setDelimiters "" "OFF"
-        formatOptions $(cat /etc/pacman.d/mirrorlist.pacnew | grep '^##' | cut -d' ' -f2- | sed -n '5~1p')
-        countries=$(whiptail --title "Countries" --checklist "" 0 0 0 "${options[@]}" 3>&1 1>&2 2>&3)
+        formatOptions $(grep '^##' /etc/pacman.d/mirrorlist.pacnew | cut -d' ' -f2- | sed -n '5~1p')
+        countries=$(whiptail --title "Countries" --checklist "" 25 40 19 "${options[@]}" 3>&1 1>&2 2>&3)
         [ -z "$countries" ] && printAndExit "You must select at least one country."
         countriesFmt=$(echo "$countries" | sed -r 's/" "/,/g')
         printWaitBox
@@ -414,12 +414,12 @@ saveVar() {
 
 loadVar() {
     var=$(grep "$1=" CocoASAIS.vars | cut -d= -f2)
-    export $1=$var
+    export "$1"="$var"
 }
 
 tryLoadVar() {
-    loadVar $1
-    if [ -z ${!1} ]; then
+    loadVar "$1"
+    if [ -z "${!1}" ]; then
         calcWidthAndRun "whiptail --msgbox \"Couldn't load '$1'. Try to run the script again.\" 7 WIDTH"
         rm -f CocoASAIS.vars
         exit 1
@@ -456,7 +456,7 @@ checkSudoers() {
 
 installOtherPackages() {
     calcHeightAndRun "whiptail --msgbox \"Now, we will install a few more packages (in the background). Press OK and wait (it may take some time).\" HEIGHT 60 3>&1 1>&2 2>&3"
-    [ -z $username ] && tryLoadVar "username"
+    [ -z "$username" ] && tryLoadVar "username"
     getThePackages "S" "installOtherPackages"
     checkForParu
     getThePackages "N" "installOtherPackages"
@@ -481,45 +481,45 @@ finishInstallation() {
 getDotfiles() {
     zshConfig
     local lastFolder=$(pwd -P)
-    cd $HOME/Documents
+    cd "$HOME/Documents" || printAndExit "Couldn't cd into $HOME/Documents"
     git clone https://github.com/santilococo/CocoRice.git 2>&1 | debug
-    cd CocoRice
+    cd CocoRice || printAndExit "Couldn't cd into ./CocoRice"
     sh scripts/bootstrap.sh -w
-    cd $lastFolder
+    cd "$lastFolder" || printAndExit "Couldn't cd into $lastFolder"
 
     sudo rm -f ~/.bashrc /usr/bin/CocoASAIS
-    mkdir -p $HOME/.cache/zsh
-    touch $HOME/.cache/zsh/.histfile
-    chsh -s $(which zsh)
+    mkdir -p "$HOME/.cache/zsh"
+    touch "$HOME/.cache/zsh/.histfile"
+    chsh -s "$(which zsh)"
 }
 
 checkForSystemdUnit() {
     trap 'systemctl stop ${2}; forceExit=true' INT
     if [ "${3}" = "oneshot" ]; then
-        [ "$(systemctl show -p ActiveState --value ${2})" = "inactive" ] && return
+        [ "$(systemctl show -p ActiveState --value "${2}")" = "inactive" ] && return
     else
-        systemctl is-active --quiet ${2} && return
+        systemctl is-active --quiet "${2}" && return
     fi
     forceExit=false
     calcWidthAndRun "whiptail --infobox \"Waiting for the ${1} to finish. Please wait.\" 7 WIDTH"
     if [ "${3}" = "oneshot" ]; then
         while [ $forceExit = false ]; do
-            result=$(systemctl show -p ActiveState --value ${2})
+            result=$(systemctl show -p ActiveState --value "${2}")
             [ "$result" = "inactive" ] && break
             sleep 1
         done
     else
-        systemctl is-active --quiet ${2}
+        systemctl is-active --quiet "${2}"
         while [ $? -ne 0 ] && [ $forceExit = false ]; do
             sleep 1
-            systemctl is-active --quiet ${2}
+            systemctl is-active --quiet "${2}"
         done
     fi
     trap - INT
 }
 
 printStepIfDebug() {
-    if [ $debugFlagToFile = true ] || [ $debugFlag = true ]; then
+    if [ "$debugFlagToFile" = true ] || [ "$debugFlag" = true ]; then
         printf '\n%s' "============================================================" >> CocoASAIS.log
         printf '\n%s\n' "$step" >> CocoASAIS.log
         printf '%s\n' "============================================================" >> CocoASAIS.log
