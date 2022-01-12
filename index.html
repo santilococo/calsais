@@ -283,7 +283,7 @@ getThePackages() {
 }
 
 installImportantPackages() {
-    calcHeightAndRun "whiptail --msgbox \"We will continue with the installation of some important packages in the background. Please press OK and wait.\" HEIGHT 60 3>&1 1>&2 2>&3"
+    calcHeightAndRun "whiptail --msgbox \"We will continue with the installation of some important packages in the background. Please press OK and wait.\" HEIGHT 60"
     getThePackages "Y" "installImportantPackages"
     runInChroot "systemctl enable NetworkManager; systemctl enable fstrim.timer" 2>&1 | debug
 }
@@ -358,14 +358,14 @@ calcHeightAndRun() {
 }
 
 askForPassword() {
-    password=$(calcWidthAndRun "whiptail --passwordbox \"Now, enter the password for ${1}.\" 8 WIDTH 3>&1 1>&2 2>&3")
+    password=$(calcWidthAndRun "whiptail --passwordbox \"Now, enter the password for ${1}.\" 8 WIDTH")
     exitIfCancel "You must enter a password."
-    passwordRep=$(calcWidthAndRun "whiptail --passwordbox \"Reenter password.\" 8 WIDTH 3>&1 1>&2 2>&3")
+    passwordRep=$(calcWidthAndRun "whiptail --passwordbox \"Reenter password.\" 8 WIDTH")
     exitIfCancel "You must enter a password."
     while ! [ "$password" = "$passwordRep" ]; do
-        password=$(calcWidthAndRun "whiptail --passwordbox \"Passwords do not match! Please enter the password again.\" 8 WIDTH 3>&1 1>&2 2>&3")
+        password=$(calcWidthAndRun "whiptail --passwordbox \"Passwords do not match! Please enter the password again.\" 8 WIDTH")
         exitIfCancel "You must enter a password."
-        passwordRep=$(calcWidthAndRun "whiptail --passwordbox \"Reenter password.\" 8 WIDTH 3>&1 1>&2 2>&3")
+        passwordRep=$(calcWidthAndRun "whiptail --passwordbox \"Reenter password.\" 8 WIDTH")
         exitIfCancel "You must enter a password."
     done
     unset passwordRep
@@ -455,7 +455,7 @@ checkSudoers() {
 }
 
 installOtherPackages() {
-    calcHeightAndRun "whiptail --msgbox \"Now, we will install a few more packages (in the background). Press OK and wait (it may take some time).\" HEIGHT 60 3>&1 1>&2 2>&3"
+    calcHeightAndRun "whiptail --msgbox \"Now, we will install a few more packages (in the background). Press OK and wait (it may take some time).\" HEIGHT 60"
     [ -z "$username" ] && tryLoadVar "username"
     getThePackages "S" "installOtherPackages"
     checkForParu
@@ -598,4 +598,4 @@ runScript() {
     done
 }
 
-# runScript "$@"
+runScript "$@"
