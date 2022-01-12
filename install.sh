@@ -128,12 +128,12 @@ getSize() {
     sizeStr=$(whiptail --inputbox "Enter the size of the ${1} (in GB, for example 1.5GB)." 0 0 3>&1 1>&2 2>&3)
     exitIfCancel "You must enter a size."
     size=$(echo "$sizeStr" | grep -Eo '[-]?[0-9]+([.,]?[0-9]+)?' | head -n1 | sed 's/,/./g' | awk '{ print int($1 * 1024) }')
-    while [ $(echo $size | awk '{ print $1 <= 0 }') -eq 1 ]; do
-        sizeStr=$(whiptail --inputbox "Size cannot be less than or equal to zero. Please enter a new size." 0 0 3>&1 1>&2 2>&3)
+    while [ "$(echo "$size" | awk '{ print $1 <= 0 }')" -eq 1 ]; do
+        sizeStr=$(whiptail --inputbox "The size must be a number and cannot be less than or equal to zero. Please enter a new size." 9 60 3>&1 1>&2 2>&3)
         exitIfCancel "You must enter a size."
         size=$(echo "$sizeStr" | grep -Eo '[-]?[0-9]+([.,]?[0-9]+)?' | head -n1 | sed 's/,/./g' | awk '{ print int($1 * 1024) }')
     done
-    echo $size
+    echo "$size"
 }
 
 createSwapfile() {
