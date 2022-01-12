@@ -59,7 +59,8 @@ partDisks() {
     if [ $whipStatus -eq 1 ]; then
         autoSelection=false
         calcHeightAndRun "whiptail --msgbox \"You will partition the disk yourself and then, when finished, you will continue with the installation.\" HEIGHT 62"
-        partTool=$(whiptail --title "Select the partitioning tool." --menu "" 0 0 0 "fdisk" "" "sfdisk" "" "cfdisk" "" "gdisk" "" "cgdisk" "" "sgdisk" "" 3>&1 1>&2 2>&3)
+        partPrograms=("fdisk" "" "sfdisk" "" "cfdisk" "" "gdisk" "" "cgdisk" "" "sgdisk" "")
+        partTool=$(whiptail --title "Select the partitioning tool." --menu "" 0 0 0 "${partPrograms[@]}" 3>&1 1>&2 2>&3)
         exitIfCancel "You must select a partitioning tool."
         $partTool "$disk"
         parts=$(lsblk "$disk" -pnl | sed -n '2~1p' | wc -l)

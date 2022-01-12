@@ -51,6 +51,7 @@ orchis-theme-bin,N,C
 pam-gnupg,N,C
 pambase,R,B
 picom-git,N,C
+nvimpager-git,N,C
 tela-icon-theme-bin,N,C
 oh-my-zsh-git,N,C
 ttf-meslo-nerd-font-powerlevel10k,N,C
