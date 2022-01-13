@@ -598,4 +598,12 @@ runScript() {
     done
 }
 
+umountAndClean() {
+    swapoff /mnt/swapfile
+    rm /mnt/swapfile
+    umount -R /mnt
+    swapoff /dev/sda2
+    parted -s /dev/sda mklabel gpt
+}
+
 runScript "$@"
