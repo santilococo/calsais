@@ -1,4 +1,4 @@
-# CocoASAIS
+# calsais
 
 Arch semi-automatic installation script.
 
@@ -12,13 +12,13 @@ Arch semi-automatic installation script.
 Run
 
 ```bash
-curl -LO santilococo.github.io/CocoASAIS
+curl -LO slococo.com.ar/calsais
 ```
 
 and then
 
 ```bash
-sh CocoASAIS
+sh calsais
 ```
 
 You can use `-d`, `-f` or `-s` to debug.
