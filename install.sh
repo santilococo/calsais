@@ -583,7 +583,7 @@ runScript() {
     else
         systemctl stop reflector.service 2>&1 | debug
         checkForSystemdUnit "systemd units" "graphical.target"
-        (systemctl start reflector.service &)
+        systemctl --no-block start reflector.service 
         welcomeMsg="Welcome to CocoASAIS!"
     fi
 
