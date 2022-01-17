@@ -284,6 +284,7 @@ getThePackages() {
 
 installImportantPackages() {
     calcHeightAndRun "whiptail --msgbox \"We will continue with the installation of some important packages in the background. Please press OK and wait.\" HEIGHT 60"
+    pacman -Sy --noconfirm archlinux-keyring
     getThePackages "Y" "installImportantPackages"
     runInChroot "systemctl enable NetworkManager; systemctl enable fstrim.timer" 2>&1 | debug
 }
