@@ -24,7 +24,7 @@ updateSystemClock() {
 }
 
 printAndExit() {
-    str="${1} Therefore, the installation process will stop, but you can continue where you left off by running:\n\nsh CocoASAIS"
+    str="${1} Therefore, the installation process will stop, but you can continue where you left off by running:\n\nsh calsais"
     newlines=$(printf "$str" | grep -c $'\n')
     chars=$(echo "$str" | wc -c)
     height=$(echo "$chars" "$newlines" | awk '{
@@ -200,9 +200,9 @@ debug() {
     if [ "$debugFlagToStdout" = true ]; then
         tee
     elif [ "$debugFlagToFile" = true ]; then
-        tee -a CocoASAIS.log > /dev/null
+        tee -a calsais.log > /dev/null
     elif [ "$debugFlag" = true ]; then
-        tee -a CocoASAIS.log
+        tee -a calsais.log
     else
         tee > /dev/null
     fi
@@ -271,7 +271,7 @@ getThePackages() {
     set -o pipefail
     if [ ! -f "packages.csv" ]; then
         printWaitBox
-        curl -LO "https://raw.githubusercontent.com/santilococo/CocoASAIS/master/packages.csv" 2>&1 | debug
+        curl -LO "https://raw.githubusercontent.com/santilococo/calsais/master/packages.csv" 2>&1 | debug
     fi
     local IFS=,
     while read -r NAME IMPORTANT INSTALLER; do
@@ -405,16 +405,16 @@ grubSetUp() {
 }
 
 saveVar() {
-    [ ! -f "CocoASAIS.vars" ] && touch CocoASAIS.vars
-    if [ -z "$(grep "$1" CocoASAIS.vars)" ]; then
-        echo "$1=$2" >> CocoASAIS.vars
+    [ ! -f "calsais.vars" ] && touch calsais.vars
+    if [ -z "$(grep "$1" calsais.vars)" ]; then
+        echo "$1=$2" >> calsais.vars
     else
-        sed -i "s|$1=.*|$1=$2|" CocoASAIS.vars
+        sed -i "s|$1=.*|$1=$2|" calsais.vars
     fi
 }
 
 loadVar() {
-    var=$(grep "$1=" CocoASAIS.vars | cut -d= -f2)
+    var=$(grep "$1=" calsais.vars | cut -d= -f2)
     export "$1"="$var"
 }
 
@@ -422,7 +422,7 @@ tryLoadVar() {
     loadVar "$1"
     if [ -z "${!1}" ]; then
         calcWidthAndRun "whiptail --msgbox \"Couldn't load '$1'. Try to run the script again.\" 7 WIDTH"
-        rm -f CocoASAIS.vars
+        rm -f calsais.vars
         exit 1
     fi
 }
@@ -467,8 +467,8 @@ installOtherPackages() {
 }
 
 finishInstallation() {
-    cp CocoASAIS /mnt/usr/bin/CocoASAIS
-    echo "sh /usr/bin/CocoASAIS && logout" >> /mnt/home/slococo/.bashrc
+    cp calsais /mnt/usr/bin/calsais
+    echo "sh /usr/bin/calsais && logout" >> /mnt/home/slococo/.bashrc
     rm -f /mnt/cocoScript
     umount -R /mnt
     whiptail --yesno "Finally, the PC needs to restart, would you like to restart now?" 0 0
@@ -488,7 +488,7 @@ getDotfiles() {
     sh scripts/bootstrap.sh -w
     cd "$lastFolder" || printAndExit "Couldn't cd into $lastFolder"
 
-    sudo rm -f ~/.bashrc /usr/bin/CocoASAIS
+    sudo rm -f ~/.bashrc /usr/bin/calsais
     mkdir -p "$HOME/.cache/zsh"
     touch "$HOME/.cache/zsh/.histfile"
     chsh -s "$(which zsh)"
@@ -521,9 +521,9 @@ checkForSystemdUnit() {
 
 printStepIfDebug() {
     if [ "$debugFlagToFile" = true ] || [ "$debugFlag" = true ]; then
-        printf '\n%s' "============================================================" >> CocoASAIS.log
-        printf '\n%s\n' "$step" >> CocoASAIS.log
-        printf '%s\n' "============================================================" >> CocoASAIS.log
+        printf '\n%s' "============================================================" >> calsais.log
+        printf '\n%s\n' "$step" >> calsais.log
+        printf '%s\n' "============================================================" >> calsais.log
     fi
 }
 
@@ -548,7 +548,7 @@ runScript() {
     debugFlag=false; debugFlagToFile=false; debugFlagToStdout=false
     while getopts ':hdfs' flag; do
         case $flag in
-            h)  printf 'usage: %s [command]\n\t-h\tPrint this help message.\n\t-s\tDebug to stdout and to CocoASAIS.log file.\n\t-f\tDebug to CocoASAIS.log file.\t-s\tDebug to stdout.\n\n' "${0##*/}" && exit 0 ;;
+            h)  printf 'usage: %s [command]\n\t-h\tPrint this help message.\n\t-s\tDebug to stdout and to calsais.log file.\n\t-f\tDebug to calsais.log file.\t-s\tDebug to stdout.\n\n' "${0##*/}" && exit 0 ;;
             d)  debugFlag=true ;;
             f)  debugFlagToFile=true ;;
             s)  debugFlagToStdout=true ;;
@@ -558,9 +558,9 @@ runScript() {
 
     clear
     if [ -d "$HOME/Documents" ]; then
-        whiptail --title "CocoASAIS" --msgbox "Now, we will finish the installation. Press OK and wait." 7 60
+        whiptail --title "calsais" --msgbox "Now, we will finish the installation. Press OK and wait." 7 60
         getDotfiles
-        whiptail --title "CocoASAIS" --msgbox "All done!" 0 0
+        whiptail --title "calsais" --msgbox "All done!" 0 0
         exit 0
     fi
 
@@ -580,15 +580,15 @@ runScript() {
     fi
 
     if [ $i -gt 0 ]; then
-        welcomeMsg="Welcome back to CocoASAIS!"
+        welcomeMsg="Welcome back to calsais!"
     else
         systemctl stop reflector.service
         checkForSystemdUnit "systemd units" "graphical.target"
         systemctl --no-block start reflector.service
-        welcomeMsg="Welcome to CocoASAIS!"
+        welcomeMsg="Welcome to calsais!"
     fi
 
-    whiptail --title "CocoASAIS" --msgbox "${welcomeMsg}" 0 0
+    whiptail --title "calsais" --msgbox "${welcomeMsg}" 0 0
 
     while [ $i -lt "${#steps[@]}" ]; do
         step=${steps[$i]}
