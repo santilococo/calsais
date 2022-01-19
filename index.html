@@ -482,8 +482,8 @@ finishInstallation() {
 getDotfiles() {
     local lastFolder=$(pwd -P)
     cd "$HOME/Documents" || printAndExit "Couldn't cd into $HOME/Documents"
-    git clone https://github.com/santilococo/CocoRice.git 2>&1 | debug
-    cd CocoRice || printAndExit "Couldn't cd into ./CocoRice"
+    git clone https://github.com/santilococo/sadedot.git 2>&1 | debug
+    cd sadedot || printAndExit "Couldn't cd into ./sadedot"
     sh scripts/bootstrap.sh
     cd "$lastFolder" || printAndExit "Couldn't cd into $lastFolder"
 
