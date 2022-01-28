@@ -14,9 +14,7 @@ formatOptions() {
 # TODO: Add support for MBR boot mode
 checkUefi() {
     ls /sys/firmware/efi/efivars > /dev/null 2>&1
-    if [ $? -ge 1 ]; then
-        printAndExit "This scripts supports only UEFI boot mode."
-    fi
+    [ $? -ge 1 ] && printAndExit "This scripts supports only UEFI boot mode."
 }
 
 updateSystemClock() {
