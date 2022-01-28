@@ -41,7 +41,7 @@ partDisks() {
 
     local IFS=$'\n'
     setDelimiters ""
-    formatOptions $(lsblk -dpnlo NAME,SIZE -e 7,11)
+    formatOptions <(lsblk -dpnlo NAME,SIZE -e 7,11)
     result=$(whiptail --title "Select the disk." --menu "" 0 0 0 "${options[@]}" 3>&1 1>&2 2>&3)
     exitIfCancel "You must select a disk."
     disk=$(echo "$result" | cut -d' ' -f1)
@@ -57,11 +57,11 @@ partDisks() {
         [ "$parts" -lt 2 ] && printAndExit "You must at least create boot and root partitions."
 
         # TODO: Ask for home partition
-        formatOptions $(lsblk "${disk}" -pnlo NAME,SIZE,MOUNTPOINTS | sed -n '2~1p')
+        formatOptions <(lsblk "${disk}" -pnlo NAME,SIZE,MOUNTPOINTS | sed -n '2~1p')
         result=$(whiptail --title "Select the boot partition." --menu "" 0 0 0 "${options[@]}" 3>&1 1>&2 2>&3)
         exitIfCancel "You must select the boot partition."
         bootPart=$(echo "$result" | cut -d' ' -f1)
-        formatOptions $(lsblk "${disk}" -pnlo NAME,SIZE,MOUNTPOINTS | sed -n '2~1p' | awk '$0!~v' v="$bootPart")
+        formatOptions <(lsblk "${disk}" -pnlo NAME,SIZE,MOUNTPOINTS | sed -n '2~1p' | awk '$0!~v' v="$bootPart")
         result=$(whiptail --title "Select the root partition." --menu "" 0 0 0 "${options[@]}" 3>&1 1>&2 2>&3)
         exitIfCancel "You must select the root partition."
         rootPart=$(echo "$result" | cut -d' ' -f1)
@@ -70,7 +70,7 @@ partDisks() {
         if [ "$parts" -gt 0 ]; then
             whiptail --yesno "Do you have a swap partition?" 0 0
             if [ $? -eq 0 ]; then
-                formatOptions $(lsblk "${disk}" -pnlo NAME,SIZE,MOUNTPOINTS | sed -n '2~1p' | awk '$0!~v' v="$bootPart|$rootPart")
+                formatOptions <(lsblk "${disk}" -pnlo NAME,SIZE,MOUNTPOINTS | sed -n '2~1p' | awk '$0!~v' v="$bootPart|$rootPart")
                 result=$(whiptail --title "Select the swap partition." --menu "" 0 0 0 "${options[@]}" 3>&1 1>&2 2>&3)
                 exitIfCancel "You must select the swap partition."
                 swapPart=$(echo "$result" | cut -d' ' -f1)
@@ -267,7 +267,7 @@ getThePackages() {
         calcHeightAndRun "whiptail --msgbox \"A menu will appear where you can deselect the packages you don't want to be installed.\" HEIGHT 60"
         local IFS=$'\n'
         setDelimiters "" "ON"
-        formatOptions $(grep "N" packages.csv | sed -n '2~1p' | cut -d',' -f1)
+        formatOptions <(grep "N" packages.csv | sed -n '2~1p' | cut -d',' -f1)
         packages=$(whiptail --title "Packages" --separate-output --checklist "Press TAB to select Ok or Cancel. If you don't want to install any packages, press Cancel." 28 50 19 "${options[@]}" 3>&1 1>&2 2>&3)
         tempFile=$(mktemp)
         for package in $packages; do
@@ -301,10 +301,10 @@ generateFstab() {
 setTimeZone() {
     whiptail --msgbox "Now, we will set the timezone." 0 0
     setDelimiters ""
-    formatOptions $(ls -l /usr/share/zoneinfo/ | grep '^d' | awk '{printf $9" \n"}' | awk '!/posix/ && !/right/')
+    formatOptions <(ls -l /usr/share/zoneinfo/ | grep '^d' | awk '{printf $9" \n"}' | awk '!/posix/ && !/right/')
     region=$(whiptail --title "Region" --menu "" 0 0 0 "${options[@]}" 3>&1 1>&2 2>&3)
     exitIfCancel "You must select a region."
-    formatOptions $(ls -l "/usr/share/zoneinfo/${region}" | grep -v '^d' | awk '{printf $9" \n"}')
+    formatOptions <(ls -l "/usr/share/zoneinfo/${region}" | grep -v '^d' | awk '{printf $9" \n"}')
     city=$(whiptail --title "City" --menu "" 0 0 0 "${options[@]}" 3>&1 1>&2 2>&3)
     exitIfCancel "You must select a city."
 
@@ -392,7 +392,7 @@ updateMirrors() {
         curl -o /etc/pacman.d/mirrorlist.pacnew https://archlinux.org/mirrorlist/all/ 2>&1 | debug
         local IFS=$'\n'
         setDelimiters "" "OFF"
-        formatOptions $(grep '^##' /etc/pacman.d/mirrorlist.pacnew | cut -d' ' -f2- | sed -n '5~1p')
+        formatOptions <(grep '^##' /etc/pacman.d/mirrorlist.pacnew | cut -d' ' -f2- | sed -n '5~1p')
         countries=$(whiptail --title "Countries" --checklist "" 25 40 19 "${options[@]}" 3>&1 1>&2 2>&3)
         [ -z "$countries" ] && printAndExit "You must select at least one country."
         countriesFmt=$(echo "$countries" | sed -r 's/" "/,/g')
