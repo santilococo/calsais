@@ -42,7 +42,8 @@ partDisks() {
     local IFS=$'\n'
     setDelimiters ""
     formatOptions <(lsblk -dpnlo NAME,SIZE -e 7,11)
-    result=$(dialog --title "Select the disk." --menu "" 0 40 0 "${options[@]}" 3>&1 1>&2 2>&3)
+    disks=$(lsblk -dpnl -e 7,11 | wc -l)
+    result=$(dialog --menu "\nSelect the disk." 0 30 $disks "${options[@]}" 3>&1 1>&2 2>&3)
     exitIfCancel "You must select a disk."
     disk=$(echo "$result" | cut -d' ' -f1)
 
@@ -50,7 +51,7 @@ partDisks() {
         autoSelection=false
         dialog --msgbox "\nYou will partition the disk yourself and then, when finished, you will continue with the installation." 8 56
         partPrograms=("fdisk" "" "sfdisk" "" "cfdisk" "" "gdisk" "" "cgdisk" "" "sgdisk" "")
-        partTool=$(dialog --title "Select the partitioning tool." --menu "" 13 40 6 "${partPrograms[@]}" 3>&1 1>&2 2>&3)
+        partTool=$(dialog --menu "\nSelect the partitioning tool." 14 35 6 "${partPrograms[@]}" 3>&1 1>&2 2>&3)
         exitIfCancel "You must select a partitioning tool."
         $partTool "$disk"
         parts=$(lsblk "$disk" -pnl | sed -n '2~1p' | wc -l)
@@ -58,20 +59,20 @@ partDisks() {
 
         # TODO: Ask for home partition
         formatOptions <(lsblk "${disk}" -pnlo NAME,SIZE,MOUNTPOINTS | sed -n '2~1p')
-        result=$(dialog --title "Select the boot partition." --menu "" 0 40 0 "${options[@]}" 3>&1 1>&2 2>&3)
+        result=$(dialog --menu "\nSelect the boot partition." 0 30 $parts "${options[@]}" 3>&1 1>&2 2>&3)
         exitIfCancel "You must select the boot partition."
         bootPart=$(echo "$result" | cut -d' ' -f1)
         formatOptions <(lsblk "${disk}" -pnlo NAME,SIZE,MOUNTPOINTS | sed -n '2~1p' | awk '$0!~v' v="$bootPart")
-        result=$(dialog --title "Select the root partition." --menu "" 0 40 0 "${options[@]}" 3>&1 1>&2 2>&3)
+        result=$(dialog --menu "\nSelect the root partition." 0 30 $parts "${options[@]}" 3>&1 1>&2 2>&3)
         exitIfCancel "You must select the root partition."
         rootPart=$(echo "$result" | cut -d' ' -f1)
 
-        parts=$(lsblk "$disk" -pnl | sed -n '2~1p' | awk '$0!~v' v="$bootPart|$rootPart" | wc -l)
-        if [ "$parts" -gt 0 ]; then
+        remainingParts=$(lsblk "$disk" -pnl | sed -n '2~1p' | awk '$0!~v' v="$bootPart|$rootPart" | wc -l)
+        if [ "$remainingParts" -gt 0 ]; then
             dialog --yesno "\nDo you have a swap partition?" 7 34
             if [ $? -eq 0 ]; then
                 formatOptions <(lsblk "${disk}" -pnlo NAME,SIZE,MOUNTPOINTS | sed -n '2~1p' | awk '$0!~v' v="$bootPart|$rootPart")
-                result=$(dialog --title "Select the swap partition." --menu "" 0 40 0 "${options[@]}" 3>&1 1>&2 2>&3)
+                result=$(dialog --menu "\nSelect the swap partition." 0 30 $parts "${options[@]}" 3>&1 1>&2 2>&3)
                 exitIfCancel "You must select the swap partition."
                 swapPart=$(echo "$result" | cut -d' ' -f1)
             else
@@ -95,7 +96,7 @@ partDisks() {
 
         dialog --yesno "\nDo you want to create a swap space?" 7 39
         if [ $? -eq 0 ]; then
-            result=$(dialog --title "Select the swap space." --menu "" 0 30 0 "Partition" "" "Swapfile" "" 3>&1 1>&2 2>&3)
+            result=$(dialog --menu "\nSelect the swap space." 0 26 2 "Partition" "" "Swapfile" "" 3>&1 1>&2 2>&3)
             exitIfCancel "You must select a swap space."
             size=$(getSize "${result:l}")
             if [ "$result" = "Partition" ]; then
@@ -156,7 +157,7 @@ formatPart() {
 mountPart() {
     mount "$rootPart" /mnt 2>&1 | debug
     if [ $autoSelection = false ]; then
-        result=$(dialog --title "Select where to mount boot partition." --menu "" 0 45 0 "/boot/efi" "" "/boot" "" "==OTHER==" "" 3>&1 1>&2 2>&3)
+        result=$(dialog --title "Select where to mount boot partition." --menu "" 0 45 1 "/boot/efi" "" "/boot" "" "==OTHER==" "" 3>&1 1>&2 2>&3)
         exitIfCancel "You must select a path."
         bootPath=$(echo "$result" | sed 's/^\///g')
         if [ "$result" = "OTHER" ]; then
@@ -287,7 +288,7 @@ getThePackages() {
 }
 
 installImportantPackages() {
-    calcHeightAndRun "whiptail --msgbox \"We will continue with the installation of some important packages in the background. Please press OK and wait.\" HEIGHT 60"
+    dialog --msgbox "\nWe will continue with the installation of some important packages in the background. Please press OK and wait." 8 60
     pacman -Sy --noconfirm archlinux-keyring 2>&1 | debug
     getThePackages "Y" "installImportantPackages"
     runInChroot "systemctl enable NetworkManager; systemctl enable fstrim.timer" 2>&1 | debug
@@ -299,7 +300,7 @@ generateFstab() {
 }
 
 setTimeZone() {
-    whiptail --msgbox "Now, we will set the timezone." 0 0
+    dialog --msgbox "\nNow, we will set the timezone." 7 34
     setDelimiters ""
     formatOptions <(find -H /usr/share/zoneinfo -maxdepth 1 -mindepth 1 -type d -printf '%f\n' | sort | awk '!/posix/ && !/right/')
     region=$(whiptail --title "Region" --menu "" 0 0 0 "${options[@]}" 3>&1 1>&2 2>&3)
