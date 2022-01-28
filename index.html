@@ -590,6 +590,9 @@ runScript() {
         checkForSystemdUnit "systemd units" "graphical.target"
         systemctl --no-block start reflector.service
         welcomeMsg="Welcome to calsais!"
+        echo "Please wait..."
+        pacman -Sy --needed --noconfirm dialog
+        clear
     fi
 
     whiptail --title "calsais" --msgbox "${welcomeMsg}" 0 0
