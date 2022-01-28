@@ -265,6 +265,21 @@ getThePackages() {
         printWaitBox
         curl -LO "https://raw.githubusercontent.com/santilococo/calsais/master/packages.csv" 2>&1 | debug
     fi
+    if [ "$IMPORTANT" = "N" ]; then
+        calcHeightAndRun "whiptail --msgbox \"A menu will appear where you can deselect the packages you don't want to be installed.\" HEIGHT 60"
+        local IFS=$'\n'
+        setDelimiters "" "ON"
+        formatOptions $(grep "N" packages.csv | sed -n '2~1p' | cut -d',' -f1)
+        packages=$(whiptail --title "Packages" --separate-output --checklist "Press TAB to select Ok or Cancel. If you don't want to install any packages, press Cancel." 28 50 19 "${options[@]}" 3>&1 1>&2 2>&3)
+        tempFile=$(mktemp)
+        for package in $packages; do
+            grep "^$package," packages.csv >> $tempFile
+        done
+        header=$(head -n1 packages.csv)
+        printf '%s\n%s' "$(cat packages.csv | sed -n '2~1p')" "$(cat $tempFile)" | sort | uniq -d > packages.csv
+        sed -i "1s/^/${header}\n/" packages.csv
+        rm $tempFile
+    fi
     local IFS=,
     while read -r NAME IMPORTANT INSTALLER; do
         if [ "$IMPORTANT" = "${1}" ]; then
