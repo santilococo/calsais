@@ -269,7 +269,7 @@ getThePackages() {
         local IFS=$'\n'
         setDelimiters "" "ON"
         formatOptions <(grep "N" packages.csv | sed -n '2~1p' | cut -d',' -f1)
-        packages=$(dialog --title "Packages" --separate-output --checklist "\nIf you don't want to install any packages, press Cancel." 28 46 19 "${options[@]}" 3>&1 1>&2 2>&3)
+        packages=$(dialog --separate-output --checklist "\nIf you don't want to install any packages, press Cancel." 28 46 19 "${options[@]}" 3>&1 1>&2 2>&3)
         tempFile=$(mktemp)
         for package in $packages; do
             grep "^$package," packages.csv >> "$tempFile"
@@ -303,10 +303,10 @@ setTimeZone() {
     dialog --msgbox "\nNow, we will set the timezone." 7 34
     setDelimiters ""
     formatOptions <(find -H /usr/share/zoneinfo -maxdepth 1 -mindepth 1 -type d -printf '%f\n' | sort | awk '!/posix/ && !/right/')
-    region=$(whiptail --title "Region" --menu "" 0 0 0 "${options[@]}" 3>&1 1>&2 2>&3)
+    region=$(dialog --menu "Select a region." 0 21 14 "${options[@]}" 3>&1 1>&2 2>&3)
     exitIfCancel "You must select a region."
     formatOptions <(find -H "/usr/share/zoneinfo/${region}" -maxdepth 1 -mindepth 1 -type f -printf '%f\n' | sort)
-    city=$(whiptail --title "City" --menu "" 0 0 0 "${options[@]}" 3>&1 1>&2 2>&3)
+    city=$(dialog --menu "Select a city." 0 23 14 "${options[@]}" 3>&1 1>&2 2>&3)
     exitIfCancel "You must select a city."
 
     ln -sf "/mnt/usr/share/zoneinfo/${region}/${city}" /mnt/etc/localtime
@@ -323,7 +323,7 @@ setLocale() {
 }
 
 networkConf() {
-    hostname=$(whiptail --inputbox "Enter the hostname." 0 0 3>&1 1>&2 2>&3)
+    hostname=$(dialog --inputbox "\nEnter the hostname." 9 28 3>&1 1>&2 2>&3)
     exitIfCancel "You must enter a hostname."
     echo "${hostname}" > /mnt/etc/hostname
     echo "
@@ -364,14 +364,14 @@ calcHeightAndRun() {
 }
 
 askForPassword() {
-    password=$(calcWidthAndRun "whiptail --passwordbox \"Now, enter the password for ${1}.\" 8 WIDTH")
+    password=$(calcWidthAndRun dialog --insecure --passwordbox "\"\nNow, enter the password for santioaguit-pc.\"" 10 WIDTH)
     exitIfCancel "You must enter a password."
-    passwordRep=$(calcWidthAndRun "whiptail --passwordbox \"Reenter password.\" 8 WIDTH")
+    passwordRep=$(dialog --insecure --passwordbox "\nReenter password." 10 30 3>&1 1>&2 2>&3)
     exitIfCancel "You must enter a password."
     while ! [ "$password" = "$passwordRep" ]; do
-        password=$(calcWidthAndRun "whiptail --passwordbox \"Passwords do not match! Please enter the password again.\" 8 WIDTH")
+        password=$(dialog --insecure --passwordbox "\nPasswords do not match! Please enter the password again." 10 60 3>&1 1>&2 2>&3)
         exitIfCancel "You must enter a password."
-        passwordRep=$(calcWidthAndRun "whiptail --passwordbox \"Reenter password.\" 8 WIDTH")
+        passwordRep=$(dialog --insecure --passwordbox "\nReenter password." 10 30 3>&1 1>&2 2>&3)
         exitIfCancel "You must enter a password."
     done
     unset passwordRep
