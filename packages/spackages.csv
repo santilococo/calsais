@@ -3,7 +3,7 @@ base,Y,A
 base-devel,S,B
 linux,Y,A
 linux-firmware,Y,A
-santilococo/libxft-bgra.git,N,D
+libxft-bgra.git,N,D
 alsa-utils,S,B
 clipnotify,N,B
 cmake,N,B
