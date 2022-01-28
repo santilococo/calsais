@@ -30,9 +30,7 @@ printAndExit() {
 }
 
 exitIfCancel() {
-    if [ $? -eq 1 ]; then
-        printAndExit "$@"
-    fi
+    [ $? -eq 1 ] && printAndExit "$@"
 }
 
 printWaitBox() {
