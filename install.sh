@@ -413,7 +413,7 @@ grubSetUp() {
 
 saveVar() {
     [ ! -f "calsais.vars" ] && touch calsais.vars
-    if [ -z "$(grep "$1" calsais.vars)" ]; then
+    if ! grep "$1" calsais.vars; then
         echo "$1=$2" >> calsais.vars
     else
         sed -i "s|$1=.*|$1=$2|" calsais.vars
