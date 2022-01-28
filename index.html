@@ -199,7 +199,7 @@ debug() {
 }
 
 installPackage() {
-    calcWidthAndRun "whiptail --infobox \"\nInstalling '$1'.\" 5 WIDTH"
+    calcWidthAndRun dialog --infobox "\"\nInstalling '$1'.\"" 5 WIDTH
     case ${3} in
         A)
             if [ "$debugFlagToStdout" = true ] || [ "$debugFlag" = true ]; then
@@ -264,11 +264,11 @@ getThePackages() {
         curl -LO "https://raw.githubusercontent.com/santilococo/calsais/master/packages.csv" 2>&1 | debug
     fi
     if [ "$IMPORTANT" = "N" ]; then
-        calcHeightAndRun "whiptail --msgbox \"A menu will appear where you can deselect the packages you don't want to be installed.\" HEIGHT 60"
+        dialog --msgbox "\nA menu will appear where you can deselect the packages you don't want to be installed." 8 59
         local IFS=$'\n'
         setDelimiters "" "ON"
         formatOptions <(grep "N" packages.csv | sed -n '2~1p' | cut -d',' -f1)
-        packages=$(whiptail --title "Packages" --separate-output --checklist "Press TAB to select Ok or Cancel. If you don't want to install any packages, press Cancel." 28 50 19 "${options[@]}" 3>&1 1>&2 2>&3)
+        packages=$(dialog --title "Packages" --separate-output --checklist "\nIf you don't want to install any packages, press Cancel." 28 46 19 "${options[@]}" 3>&1 1>&2 2>&3)
         tempFile=$(mktemp)
         for package in $packages; do
             grep "^$package," packages.csv >> "$tempFile"
