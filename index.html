@@ -23,7 +23,7 @@ updateSystemClock() {
 
 printAndExit() {
     str="${1} Therefore, the installation process will stop, but you can continue where you left off by running:\n\nsh calsais"
-    calcHeightAndRun "whiptail --msgbox \"${str}\" HEIGHT 60"
+    calcHeightAndRun "dialog --msgbox \"\n${str}\" HEIGHT 59"
     exit 1
 }
 
@@ -32,25 +32,25 @@ exitIfCancel() {
 }
 
 printWaitBox() {
-    whiptail --infobox "Please wait..." 7 19
+    dialog --infobox "\nPlease wait..." 5 18
 }
 
 partDisks() {
-    whiptail --yesno "Do you want me to automatically partition and format a disk for you?" 0 0
+    dialog --yesno "\nDo you want me to automatically partition and format a disk for you?" 8 59
     whipStatus=$?
 
     local IFS=$'\n'
     setDelimiters ""
     formatOptions <(lsblk -dpnlo NAME,SIZE -e 7,11)
-    result=$(whiptail --title "Select the disk." --menu "" 0 0 0 "${options[@]}" 3>&1 1>&2 2>&3)
+    result=$(dialog --title "Select the disk." --menu "" 0 40 0 "${options[@]}" 3>&1 1>&2 2>&3)
     exitIfCancel "You must select a disk."
     disk=$(echo "$result" | cut -d' ' -f1)
 
     if [ $whipStatus -eq 1 ]; then
         autoSelection=false
-        calcHeightAndRun "whiptail --msgbox \"You will partition the disk yourself and then, when finished, you will continue with the installation.\" HEIGHT 58"
+        dialog --msgbox "\nYou will partition the disk yourself and then, when finished, you will continue with the installation." 8 56
         partPrograms=("fdisk" "" "sfdisk" "" "cfdisk" "" "gdisk" "" "cgdisk" "" "sgdisk" "")
-        partTool=$(whiptail --title "Select the partitioning tool." --menu "" 0 0 0 "${partPrograms[@]}" 3>&1 1>&2 2>&3)
+        partTool=$(dialog --title "Select the partitioning tool." --menu "" 13 40 6 "${partPrograms[@]}" 3>&1 1>&2 2>&3)
         exitIfCancel "You must select a partitioning tool."
         $partTool "$disk"
         parts=$(lsblk "$disk" -pnl | sed -n '2~1p' | wc -l)
@@ -58,31 +58,31 @@ partDisks() {
 
         # TODO: Ask for home partition
         formatOptions <(lsblk "${disk}" -pnlo NAME,SIZE,MOUNTPOINTS | sed -n '2~1p')
-        result=$(whiptail --title "Select the boot partition." --menu "" 0 0 0 "${options[@]}" 3>&1 1>&2 2>&3)
+        result=$(dialog --title "Select the boot partition." --menu "" 0 40 0 "${options[@]}" 3>&1 1>&2 2>&3)
         exitIfCancel "You must select the boot partition."
         bootPart=$(echo "$result" | cut -d' ' -f1)
         formatOptions <(lsblk "${disk}" -pnlo NAME,SIZE,MOUNTPOINTS | sed -n '2~1p' | awk '$0!~v' v="$bootPart")
-        result=$(whiptail --title "Select the root partition." --menu "" 0 0 0 "${options[@]}" 3>&1 1>&2 2>&3)
+        result=$(dialog --title "Select the root partition." --menu "" 0 40 0 "${options[@]}" 3>&1 1>&2 2>&3)
         exitIfCancel "You must select the root partition."
         rootPart=$(echo "$result" | cut -d' ' -f1)
 
         parts=$(lsblk "$disk" -pnl | sed -n '2~1p' | awk '$0!~v' v="$bootPart|$rootPart" | wc -l)
         if [ "$parts" -gt 0 ]; then
-            whiptail --yesno "Do you have a swap partition?" 0 0
+            dialog --yesno "\nDo you have a swap partition?" 7 34
             if [ $? -eq 0 ]; then
                 formatOptions <(lsblk "${disk}" -pnlo NAME,SIZE,MOUNTPOINTS | sed -n '2~1p' | awk '$0!~v' v="$bootPart|$rootPart")
-                result=$(whiptail --title "Select the swap partition." --menu "" 0 0 0 "${options[@]}" 3>&1 1>&2 2>&3)
+                result=$(dialog --title "Select the swap partition." --menu "" 0 40 0 "${options[@]}" 3>&1 1>&2 2>&3)
                 exitIfCancel "You must select the swap partition."
                 swapPart=$(echo "$result" | cut -d' ' -f1)
             else
-                whiptail --yesno "Do you want to create a swapfile?" 0 0
+                dialog --yesno "\nDo you want to create a swapfile?" 7 37
                 if [ $? -eq 0 ]; then
                     size=$(getSize "swapfile")
                     swapfile=/mnt/swapfile
                 fi
             fi
         else
-            whiptail --yesno "Do you want to create a swapfile?" 0 0
+            dialog --yesno "\nDo you want to create a swapfile?" 7 37
             if [ $? -eq 0 ]; then
                 size=$(getSize "swapfile")
                 swapfile=/mnt/swapfile
@@ -93,9 +93,9 @@ partDisks() {
         bootPart=${disk}1
         rootPart=${disk}2
 
-        whiptail --yesno "Do you want to create a swap space?" 0 0
+        dialog --yesno "\nDo you want to create a swap space?" 7 39
         if [ $? -eq 0 ]; then
-            result=$(whiptail --title "Select the swap space." --menu "" 0 0 0 "Partition" "" "Swapfile" "" 3>&1 1>&2 2>&3)
+            result=$(dialog --title "Select the swap space." --menu "" 0 30 0 "Partition" "" "Swapfile" "" 3>&1 1>&2 2>&3)
             exitIfCancel "You must select a swap space."
             size=$(getSize "${result:l}")
             if [ "$result" = "Partition" ]; then
