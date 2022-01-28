@@ -6,9 +6,9 @@ setDelimiters() {
 
 formatOptions() {
     options=()
-    for item in "$@"; do
+    while read -r item; do
         options+=("${item}" "${delimiters[@]}")
-    done
+    done < "$1"
 }
 
 # TODO: Add support for MBR boot mode
