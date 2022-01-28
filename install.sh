@@ -157,7 +157,7 @@ formatPart() {
 mountPart() {
     mount "$rootPart" /mnt 2>&1 | debug
     if [ $autoSelection = false ]; then
-        result=$(dialog --title "Select where to mount boot partition." --menu "" 0 45 1 "/boot/efi" "" "/boot" "" "==OTHER==" "" 3>&1 1>&2 2>&3)
+        result=$(dialog --menu "\nSelect where to mount the boot partition." 0 30 4 "/boot/efi" "" "/boot" "" "==OTHER==" "" 3>&1 1>&2 2>&3)
         exitIfCancel "You must select a path."
         bootPath=$(echo "$result" | sed 's/^\///g')
         if [ "$result" = "OTHER" ]; then
