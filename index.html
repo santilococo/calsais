@@ -273,12 +273,11 @@ getThePackages() {
         packages=$(whiptail --title "Packages" --separate-output --checklist "Press TAB to select Ok or Cancel. If you don't want to install any packages, press Cancel." 28 50 19 "${options[@]}" 3>&1 1>&2 2>&3)
         tempFile=$(mktemp)
         for package in $packages; do
-            grep "^$package," packages.csv >> $tempFile
+            grep "^$package," packages.csv >> "$tempFile"
         done
         header=$(head -n1 packages.csv)
-        printf '%s\n%s' "$(cat packages.csv | sed -n '2~1p')" "$(cat $tempFile)" | sort | uniq -d > packages.csv
-        sed -i "1s/^/${header}\n/" packages.csv
-        rm $tempFile
+        packages=$(sort <(sed -n '2~1p' packages.csv) <(cat "$tempFile") | uniq -d)
+        printf '%s\n%s' "$header" "$packages" > packages.csv
     fi
     local IFS=,
     while read -r NAME IMPORTANT INSTALLER; do
@@ -414,7 +413,7 @@ grubSetUp() {
 
 saveVar() {
     [ ! -f "calsais.vars" ] && touch calsais.vars
-    if [ -z "$(grep "$1" calsais.vars)" ]; then
+    if ! grep "$1" calsais.vars; then
         echo "$1=$2" >> calsais.vars
     else
         sed -i "s|$1=.*|$1=$2|" calsais.vars
