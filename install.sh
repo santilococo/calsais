@@ -384,8 +384,8 @@ setRootPassword() {
 }
 
 updateMirrors() {
-    calcHeightAndRun "whiptail --msgbox \"Now, we will update the mirror list by taking the most recently synchronized HTTPS mirrors sorted by download rate.\" HEIGHT 65"
-    whiptail --yesno "Would you like to choose your closest countries to narrow the search?" 0 0
+    dialog --msgbox "\nNow, we will update the mirror list by taking the most recently synchronized HTTPS mirrors sorted by download rate." 9 59
+    dialog --yesno "\nWould you like to choose your closest countries to narrow the search?" 8 55
     if [ $? -eq 0 ]; then
         printWaitBox
         systemctl stop reflector.service
@@ -394,7 +394,7 @@ updateMirrors() {
         local IFS=$'\n'
         setDelimiters "" "OFF"
         formatOptions <(grep '^##' /etc/pacman.d/mirrorlist.pacnew | cut -d' ' -f2- | sed -n '5~1p')
-        countries=$(whiptail --title "Countries" --checklist "" 25 40 19 "${options[@]}" 3>&1 1>&2 2>&3)
+        countries=$(dialog --checklist "\nSelect your closest countries." 25 38 19 "${options[@]}" 3>&1 1>&2 2>&3)
         [ -z "$countries" ] && printAndExit "You must select at least one country."
         countriesFmt=$(echo "$countries" | sed -r 's/" "/,/g')
         printWaitBox
@@ -427,14 +427,14 @@ loadVar() {
 tryLoadVar() {
     loadVar "$1"
     if [ -z "${!1}" ]; then
-        calcWidthAndRun "whiptail --msgbox \"Couldn't load '$1'. Try to run the script again.\" 7 WIDTH"
+        calcWidthAndRun dialog --msgbox "\"\nCouldn't load '$1'. Try to run the script again.\"" 7 WIDTH
         rm -f calsais.vars
         exit 1
     fi
 }
 
 userSetUp() {
-    username=$(whiptail --inputbox "Enter the new username." 0 0 3>&1 1>&2 2>&3) && saveVar "username" "$username"
+    username=$(dialog --inputbox "Enter the new username." 10 30 3>&1 1>&2 2>&3) && saveVar "username" "$username"
     exitIfCancel "You must enter an username."
     askForPassword "${username}" "userSetUp"
     runInChroot "useradd -m ${username};echo \"${username}:${password}\" | chpasswd; usermod -aG wheel ${username}"
@@ -455,14 +455,14 @@ EOF
 checkSudoers() {
     runInChroot "visudo -c" 2>&1 | debug
     if [ $? -ne 0 ]; then
-        calcWidthAndRun "whiptail --msgbox \"Sudoers check failed. Try to run the script again.\" 7 WIDTH"
+        dialog --msgbox "\nSudoers check failed. Try to run the script again." 7 54
         cp /etc/sudoers /mnt/etc/sudoers
         exit 1
     fi
 }
 
 installOtherPackages() {
-    calcHeightAndRun "whiptail --msgbox \"Now, we will install a few more packages (in the background). Press OK and wait (it may take some time).\" HEIGHT 60"
+    dialog --msgbox "\nNow, we will install a few more packages (in the background). Press OK and wait (it may take some time)." 8 59
     [ -z "$username" ] && tryLoadVar "username"
     getThePackages "S" "installOtherPackages"
     checkForParu
@@ -477,7 +477,7 @@ finishInstallation() {
     echo "sh /usr/bin/calsais && logout" >> /mnt/home/slococo/.bashrc
     rm -f /mnt/cocoScript
     umount -R /mnt
-    whiptail --yesno "Finally, the PC needs to restart, would you like to restart now?" 0 0
+    dialog --yesno "\nFinally, the PC needs to restart, would you like to restart now?" 8 47
     if [ $? -eq 0 ]; then
         reboot
     else
@@ -507,7 +507,7 @@ checkForSystemdUnit() {
         systemctl is-active --quiet "${2}" && return
     fi
     forceExit=false
-    calcWidthAndRun "whiptail --infobox \"Waiting for the ${1} to finish. Please wait.\" 7 WIDTH"
+    calcWidthAndRun dialog --infobox "\"\nWaiting for the ${1} to finish. Please wait.\"" 5 WIDTH
     if [ "${3}" = "oneshot" ]; then
         while [ $forceExit = false ]; do
             result=$(systemctl show -p ActiveState --value "${2}")
@@ -563,9 +563,9 @@ runScript() {
 
     clear
     if [ -d "$HOME/Documents" ]; then
-        whiptail --title "calsais" --msgbox "Now, we will finish the installation. Press OK and wait." 7 60
+        dialog --title "calsais" --msgbox "\nNow, we will finish the installation. Press OK and wait." 7 60
         getDotfiles
-        whiptail --title "calsais" --msgbox "All done!" 0 0
+        dialog --title "calsais" --msgbox "\nAll done!" 7 15
         exit 0
     fi
 
@@ -596,7 +596,7 @@ runScript() {
         clear
     fi
 
-    whiptail --title "calsais" --msgbox "${welcomeMsg}" 0 0
+    calcWidthAndRun dialog --title "calsais" --msgbox "\"\n${welcomeMsg}\"" 7 WIDTH
 
     while [ $i -lt "${#steps[@]}" ]; do
         step=${steps[$i]}
