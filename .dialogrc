@@ -1,7 +1,7 @@
 screen_color = (CYAN,CYAN,ON)
 shadow_color = (BLACK,BLACK,ON)
 dialog_color = (BLACK,WHITE,OFF)
-title_color = (BLACK,WHITE,OFF)
+title_color = (RED,WHITE,OFF)
 border_color = (WHITE,WHITE,ON)
 button_active_color = (WHITE,BLUE,ON)
 button_inactive_color = dialog_color
