@@ -23,7 +23,7 @@ updateSystemClock() {
 
 printAndExit() {
     str="${1} Therefore, the installation process will stop, but you can continue where you left off by running:\n\nsh calsais"
-    calcHeightAndRun "dialog --msgbox \"\n${str}\" HEIGHT 59"
+    calcHeightAndRun dialog --msgbox "\"\n${str}\"" HEIGHT 59
     exit 1
 }
 
@@ -116,11 +116,11 @@ partDisks() {
 }
 
 getSize() {
-    sizeStr=$(whiptail --inputbox "Enter the size of the ${1} (in GB, for example 1.5GB)." 0 0 3>&1 1>&2 2>&3)
+    sizeStr=$(dialog --inputbox "\nEnter the size of the ${1} (in GB, for example 1.5GB)." 10 63 3>&1 1>&2 2>&3)
     exitIfCancel "You must enter a size."
     size=$(echo "$sizeStr" | grep -Eo '[-]?[0-9]+([.,]?[0-9]+)?' | head -n1 | sed 's/,/./g' | awk '{ print int($1 * 1024) }')
     while [ "$(echo "$size" | awk '{ print $1 <= 0 }')" -eq 1 ]; do
-        sizeStr=$(whiptail --inputbox "The size must be a number and cannot be less than or equal to zero. Please enter a new size." 9 60 3>&1 1>&2 2>&3)
+        sizeStr=$(dialog --inputbox "\nThe size must be a number and cannot be less than or equal to zero. Please enter a new size." 11 63 3>&1 1>&2 2>&3)
         exitIfCancel "You must enter a size."
         size=$(echo "$sizeStr" | grep -Eo '[-]?[0-9]+([.,]?[0-9]+)?' | head -n1 | sed 's/,/./g' | awk '{ print int($1 * 1024) }')
     done
@@ -156,17 +156,17 @@ formatPart() {
 mountPart() {
     mount "$rootPart" /mnt 2>&1 | debug
     if [ $autoSelection = false ]; then
-        result=$(whiptail --title "Select where to mount boot partition." --menu "" 0 0 0 "/boot/efi" "" "/boot" "" "==OTHER==" "" 3>&1 1>&2 2>&3)
+        result=$(dialog --title "Select where to mount boot partition." --menu "" 0 45 0 "/boot/efi" "" "/boot" "" "==OTHER==" "" 3>&1 1>&2 2>&3)
         exitIfCancel "You must select a path."
         bootPath=$(echo "$result" | sed 's/^\///g')
         if [ "$result" = "OTHER" ]; then
             local IFS=' '
-            result=$(whiptail --inputbox "Enter the absolute path." 0 0 3>&1 1>&2 2>&3)
+            result=$(dialog --inputbox "\nEnter the absolute path." 10 35 3>&1 1>&2 2>&3)
             exitIfCancel "You must enter a path."
             bootPath=$(echo "$result" | sed 's/^\///g')
             mkdir -p "/mnt/$bootPath"
             while [[ ! -d "/mnt/$bootPath" ]]; do
-                result=$(whiptail --inputbox "Path isn't valid. Please try again" 0 0 3>&1 1>&2 2>&3)
+                result=$(dialog --inputbox "\nPath isn't valid. Please try again." 10 40 3>&1 1>&2 2>&3)
                 exitIfCancel "You must enter a path."
                 bootPath=$(echo "$result" | sed 's/^\///g')
                 mkdir -p "/mnt/$bootPath"
@@ -199,7 +199,7 @@ debug() {
 }
 
 installPackage() {
-    calcWidthAndRun "whiptail --infobox \"Installing '$1'.\" 7 WIDTH"
+    calcWidthAndRun "whiptail --infobox \"\nInstalling '$1'.\" 5 WIDTH"
     case ${3} in
         A)
             if [ "$debugFlagToStdout" = true ] || [ "$debugFlag" = true ]; then
