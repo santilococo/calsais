@@ -301,10 +301,10 @@ generateFstab() {
 setTimeZone() {
     whiptail --msgbox "Now, we will set the timezone." 0 0
     setDelimiters ""
-    formatOptions <(ls -l /usr/share/zoneinfo/ | grep '^d' | awk '{printf $9" \n"}' | awk '!/posix/ && !/right/')
+    formatOptions <(find -H /usr/share/zoneinfo -maxdepth 1 -mindepth 1 -type d -printf '%f\n' | sort | awk '!/posix/ && !/right/')
     region=$(whiptail --title "Region" --menu "" 0 0 0 "${options[@]}" 3>&1 1>&2 2>&3)
     exitIfCancel "You must select a region."
-    formatOptions <(ls -l "/usr/share/zoneinfo/${region}" | grep -v '^d' | awk '{printf $9" \n"}')
+    formatOptions <(find -H "/usr/share/zoneinfo/${region}" -maxdepth 1 -mindepth 1 -type f -printf '%f\n' | sort)
     city=$(whiptail --title "City" --menu "" 0 0 0 "${options[@]}" 3>&1 1>&2 2>&3)
     exitIfCancel "You must select a city."
 
