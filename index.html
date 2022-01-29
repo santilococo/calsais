@@ -368,8 +368,7 @@ calcWidth() {
 
 calcHeight() {
     newlines=$(echo -ne | grep -c $'\n')
-    chars=${#1}
-    height=$(echo "$chars" "$newlines" | awk '{
+    height=$(echo "${#1}" "$newlines" | awk '{
         x = (($1 - $2 + ($2 * 60)) / 60)
         printf "%d", (x == int(x)) ? x : int(x) + 1
     }')
