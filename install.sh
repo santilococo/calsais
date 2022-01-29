@@ -353,7 +353,7 @@ calcAndRun() {
 }
 
 calcWidth() {
-    str=$1; count=1; found=false; option=1
+    count=1; found=false; option=1
     while IFS= read -r -N 1 c; do
         if [[ "$c" == $'\n' ]]; then
             [ $count -ge $option ] && option=$count
@@ -361,7 +361,7 @@ calcWidth() {
             count=-1
         fi
         ((count++))
-    done < <(echo -ne "$str")
+    done < <(echo -ne "$1")
     [ $option -ge $count ] && count=option
     echo $((count+4))
 }
