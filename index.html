@@ -377,7 +377,7 @@ calcHeight() {
 }
 
 askForPassword() {
-    password=$(calcAndRun dialog --insecure --passwordbox "\"\nNow, enter the password for santioaguit-pc.\"" 10 WIDTH)
+    password=$(calcAndRun dialog --insecure --passwordbox "\"\nNow, enter the password for $1.\"" 10 WIDTH)
     exitIfCancel "You must enter a password."
     passwordRep=$(dialog --insecure --passwordbox "\nReenter password." 10 30 3>&1 1>&2 2>&3)
     exitIfCancel "You must enter a password."
