@@ -238,14 +238,8 @@ installPackage() {
                 runInChroot "sudo -u $username paru -S $flag --noconfirm --skipreview ${1}" 2>&1 | debug
             fi
             ;;
-        D)
-            pkgName=$(echo "${1}" | grep -oP '(?<=/).*?(?=.git)')
-            runInChroot "sudo -u $username paru -Q ${pkgName}" 2>&1 | debug
-            [ $? -eq 0 ] && return
-            runInChroot "cd /tmp; sudo -u $username git clone https://github.com/${1}; cd ${pkgName}; sudo -u $username makepkg -si --noconfirm; cd ..; rm -rf ${pkgName}" 2>&1 | debug
-            ;;
         ?)
-            printAndExit "INSTALL must be A, B, C or D in packages.csv file."
+            printAndExit "INSTALL must be A, B or C in packages.csv file."
             ;;
     esac
     exitIfCancel "Package installation failed."
