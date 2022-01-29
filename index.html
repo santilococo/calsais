@@ -434,7 +434,7 @@ saveVar() {
 }
 
 loadVar() {
-    var=$(grep "$1=" calsais.vars | cut -d= -f2)
+    [ -f "calsais.vars" ] && var=$(grep "$1=" calsais.vars | cut -d= -f2) || var=""
     export "$1"="$var"
 }
 
