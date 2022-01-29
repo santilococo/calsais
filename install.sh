@@ -598,7 +598,7 @@ runScript() {
         mv .dialogrc /etc/dialogrc
     fi
 
-    i=0; found=false
+    local i=0; found=false
     loadVar "lastStep"
     if [ -n "$lastStep" ]; then
         for item in "${steps[@]}"; do
