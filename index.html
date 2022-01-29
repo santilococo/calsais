@@ -362,7 +362,7 @@ calcWidth() {
         fi
         ((count++))
     done < <(echo -ne "$1")
-    [ $option -ge $count ] && count=option
+    [ $option -ge "$count" ] && count=option
     echo $((count+4))
 }
 
