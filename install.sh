@@ -49,7 +49,8 @@ partDisks() {
 
     if [ $whipStatus -eq 1 ]; then
         autoSelection=false
-        dialog --msgbox "\nYou will partition the disk yourself and then, when finished, you will continue with the installation." 8 56
+        msg="\nYou will partition the disk yourself and then, when finished, you will continue with the installation."
+        dialog --msgbox "$msg" 8 56
         partPrograms=("fdisk" "" "sfdisk" "" "cfdisk" "" "gdisk" "" "cgdisk" "" "sgdisk" "")
         partTool=$(dialog --menu "\nSelect the partitioning tool." 14 35 6 "${partPrograms[@]}" 3>&1 1>&2 2>&3)
         exitIfCancel "You must select a partitioning tool."
@@ -121,7 +122,8 @@ getSize() {
     exitIfCancel "You must enter a size."
     size=$(echo "$sizeStr" | grep -Eo '[-]?[0-9]+([.,]?[0-9]+)?' | head -n1 | sed 's/,/./g' | awk '{ print int($1 * 1024) }')
     while [ "$(echo "$size" | awk '{ print $1 <= 0 }')" -eq 1 ]; do
-        sizeStr=$(dialog --inputbox "\nThe size must be a number and cannot be less than or equal to zero. Please enter a new size." 11 63 3>&1 1>&2 2>&3)
+        msg="\nThe size must be a number and cannot be less than or equal to zero. Please enter a new size."
+        sizeStr=$(dialog --inputbox "$msg" 11 63 3>&1 1>&2 2>&3)
         exitIfCancel "You must enter a size."
         size=$(echo "$sizeStr" | grep -Eo '[-]?[0-9]+([.,]?[0-9]+)?' | head -n1 | sed 's/,/./g' | awk '{ print int($1 * 1024) }')
     done
@@ -157,7 +159,8 @@ formatPart() {
 mountPart() {
     mount "$rootPart" /mnt 2>&1 | debug
     if [ $autoSelection = false ]; then
-        result=$(dialog --menu "\nSelect where to mount the boot partition." 0 30 4 "/boot/efi" "" "/boot" "" "==OTHER==" "" 3>&1 1>&2 2>&3)
+        mountOptions=("/boot/efi" "" "/boot" "" "==OTHER==" "")
+        result=$(dialog --menu "\nSelect where to mount the boot partition." 0 30 4 "${mountOptions[@]}" 3>&1 1>&2 2>&3)
         exitIfCancel "You must select a path."
         bootPath=$(echo "$result" | sed 's/^\///g')
         if [ "$result" = "OTHER" ]; then
