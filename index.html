@@ -515,9 +515,8 @@ checkForSystemdUnit() {
 
 printStepIfDebug() {
     if [ "$debugFlagToFile" = true ] || [ "$debugFlag" = true ]; then
-        printf '\n%s' "============================================================" >> calsais.log
-        printf '\n%s\n' "$step" >> calsais.log
-        printf '%s\n' "============================================================" >> calsais.log
+        printf '\n%s\n%s\n%s\n' "============================================================" "$step" \
+        "============================================================" >> calsais.log
     fi
 }
 
@@ -538,11 +537,21 @@ steps=(
     finishInstallation
 )
 
+usage() {
+    cat << EOF
+usage: ${0##*/} [command]
+    -h      Print this help message.
+    -d      Print log to stdout and calsais.log file.
+    -f      Print log to calsais.log file.
+    -s      Print log to stdout.
+EOF
+}
+
 runScript() {
     debugFlag=false; debugFlagToFile=false; debugFlagToStdout=false
     while getopts ':hdfs' flag; do
         case $flag in
-            h)  printf 'usage: %s [command]\n\t-h\tPrint this help message.\n\t-s\tDebug to stdout and to calsais.log file.\n\t-f\tDebug to calsais.log file.\t-s\tDebug to stdout.\n\n' "${0##*/}" && exit 0 ;;
+            h)  usage && exit 0 ;;
             d)  debugFlag=true ;;
             f)  debugFlagToFile=true ;;
             s)  debugFlagToStdout=true ;;
