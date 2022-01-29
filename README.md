@@ -21,7 +21,7 @@ and then
 sh calsais
 ```
 
-You can use `-d`, `-f` or `-s` to debug.
+You can use `-d`, `-f` or `-s` to enable logging.
 
 The script only supports UEFI boot mode.
 
