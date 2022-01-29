@@ -43,7 +43,7 @@ partDisks() {
     setDelimiters ""
     formatOptions <(lsblk -dpnlo NAME,SIZE -e 7,11)
     disks=$(lsblk -dpnl -e 7,11 | wc -l)
-    result=$(dialog --menu "\nSelect the disk." 0 30 $disks "${options[@]}" 3>&1 1>&2 2>&3)
+    result=$(dialog --menu "\nSelect the disk." 0 30 "$disks" "${options[@]}" 3>&1 1>&2 2>&3)
     exitIfCancel "You must select a disk."
     disk=$(echo "$result" | cut -d' ' -f1)
 
@@ -59,11 +59,11 @@ partDisks() {
 
         # TODO: Ask for home partition
         formatOptions <(lsblk "${disk}" -pnlo NAME,SIZE,MOUNTPOINTS | sed -n '2~1p')
-        result=$(dialog --menu "\nSelect the boot partition." 0 30 $parts "${options[@]}" 3>&1 1>&2 2>&3)
+        result=$(dialog --menu "\nSelect the boot partition." 0 30 "$parts" "${options[@]}" 3>&1 1>&2 2>&3)
         exitIfCancel "You must select the boot partition."
         bootPart=$(echo "$result" | cut -d' ' -f1)
         formatOptions <(lsblk "${disk}" -pnlo NAME,SIZE,MOUNTPOINTS | sed -n '2~1p' | awk '$0!~v' v="$bootPart")
-        result=$(dialog --menu "\nSelect the root partition." 0 30 $parts "${options[@]}" 3>&1 1>&2 2>&3)
+        result=$(dialog --menu "\nSelect the root partition." 0 30 "$parts" "${options[@]}" 3>&1 1>&2 2>&3)
         exitIfCancel "You must select the root partition."
         rootPart=$(echo "$result" | cut -d' ' -f1)
 
@@ -72,7 +72,7 @@ partDisks() {
             dialog --yesno "\nDo you have a swap partition?" 7 34
             if [ $? -eq 0 ]; then
                 formatOptions <(lsblk "${disk}" -pnlo NAME,SIZE,MOUNTPOINTS | sed -n '2~1p' | awk '$0!~v' v="$bootPart|$rootPart")
-                result=$(dialog --menu "\nSelect the swap partition." 0 30 $parts "${options[@]}" 3>&1 1>&2 2>&3)
+                result=$(dialog --menu "\nSelect the swap partition." 0 30 "$parts" "${options[@]}" 3>&1 1>&2 2>&3)
                 exitIfCancel "You must select the swap partition."
                 swapPart=$(echo "$result" | cut -d' ' -f1)
             else
