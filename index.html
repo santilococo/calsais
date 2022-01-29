@@ -373,7 +373,8 @@ setRootPassword() {
 }
 
 updateMirrors() {
-    dialog --msgbox "\nNow, we will update the mirror list by taking the most recently synchronized HTTPS mirrors sorted by download rate." 9 59
+    msg="\nNow, we will update the mirror list by taking the most recently synchronized HTTPS mirrors sorted by download rate."
+    dialog --msgbox "$msg" 9 59
     dialog --yesno "\nWould you like to choose your closest countries to narrow the search?" 8 55
     if [ $? -eq 0 ]; then
         printWaitBox
@@ -396,7 +397,8 @@ updateMirrors() {
 grubSetUp() {
     printWaitBox
     [ -z $bootPath ] && tryLoadVar "bootPath"
-    runInChroot "grub-install --target=x86_64-efi --efi-directory=${bootPath} --bootloader-id=GRUB; grub-mkconfig -o /boot/grub/grub.cfg" 2>&1 | debug
+    runInChroot "grub-install --target=x86_64-efi --efi-directory=${bootPath} --bootloader-id=GRUB"
+    runInChroot "grub-mkconfig -o /boot/grub/grub.cfg" 2>&1 | debug
 }
 
 saveVar() {
@@ -451,7 +453,8 @@ checkSudoers() {
 }
 
 installOtherPackages() {
-    dialog --msgbox "\nNow, we will install a few more packages (in the background). Press OK and wait (it may take some time)." 8 59
+    msg="\nNow, we will install a few more packages (in the background). Press OK and wait (it may take some time)."
+    dialog --msgbox "$msg" 8 59
     [ -z "$username" ] && tryLoadVar "username"
     getThePackages "S" "installOtherPackages"
     checkForParu
