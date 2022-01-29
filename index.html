@@ -354,16 +354,16 @@ calcAndRun() {
 
 calcWidth() {
     str=$1; count=1; found=false; option=1
-    for (( i = 0; i < ${#str}; i++ )); do
-        if [ "${str:$i:1}" = "\\" ] && [ "${str:$((i+1)):1}" = "n" ]; then
+    while IFS= read -r -N 1 c; do
+        if [[ "$c" == $'\n' ]]; then
             [ $count -ge $option ] && option=$count
             found=true
             count=-1
         fi
         ((count++))
-    done
-    [ $option -ge "$count" ] && count=option
-    echo $((count+3))
+    done < <(echo -ne "$str")
+    [ $option -ge $count ] && count=option
+    echo $((count+4))
 }
 
 calcHeight() {
