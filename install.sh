@@ -520,7 +520,8 @@ checkForSystemdUnit() {
     else
         systemctl is-active --quiet "${2}" && return
     fi
-    trap 'systemctl stop ${2}; forceExit=true' INT
+    trapBackup=$(trap)
+    trap 'systemctl stop ${2}; forceExit=true' INT QUIT TERM
     forceExit=false
     calcAndRun dialog --infobox "\"\nWaiting for the ${1} to finish. Please wait.\"" 5 WIDTH
     if [ "${3}" = "oneshot" ]; then
@@ -536,7 +537,7 @@ checkForSystemdUnit() {
             systemctl is-active --quiet "${2}"
         done
     fi
-    trap - INT
+    eval "$trapBackup"
 }
 
 printStepIfDebug() {
@@ -625,6 +626,7 @@ runScript() {
         clear
     fi
 
+    trap 'printAndExit "You pressed <Ctrl-c/d> or exit calsais script."' INT QUIT TERM
     calcAndRun dialog --title "calsais" --msgbox "\"\n${welcomeMsg}\"" 7 WIDTH
 
     while [ $i -lt "${#steps[@]}" ]; do
