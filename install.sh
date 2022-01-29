@@ -99,7 +99,7 @@ partDisks() {
         if [ $? -eq 0 ]; then
             result=$(dialog --menu "\nSelect the swap space." 0 26 2 "Partition" "" "Swapfile" "" 3>&1 1>&2 2>&3)
             exitIfCancel "You must select a swap space."
-            size=$(getSize "${result:l}")
+            size=$(getSize "${result,,}")
             if [ "$result" = "Partition" ]; then
                 swapPart=${disk}2
                 rootPart=${disk}3
