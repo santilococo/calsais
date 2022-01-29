@@ -574,6 +574,23 @@ usage: ${0##*/} [command]
 EOF
 }
 
+printLogo() {
+    tput bold
+    tput setaf 4
+    cat << END
+                        ,,                     ,,          
+                      \`7MM                     db          
+                        MM                                 
+     ,p6"bo   ,6"Yb.    MM  ,pP"Ybd  ,6"Yb.  \`7MM  ,pP"Ybd 
+    6M'  OO  8)   MM    MM  8I   \`" 8)   MM    MM  8I   \`" 
+    8M        ,pm9MM    MM  \`YMMMa.  ,pm9MM    MM  \`YMMMa. 
+    YM.    , 8M   MM    MM  L.   I8 8M   MM    MM  L.   I8 
+     YMbmd'  \`Moo9^Yo  JMML M9mmmP' \`Moo9^Yo  JMML M9mmmP' 
+    ======================================================
+END
+    printf '\n\n\n%s\n' "Please wait..."
+}
+
 runScript() {
     debugFlag=false; debugFlagToFile=false; debugFlagToStdout=false
     while getopts ':hdfs' flag; do
@@ -586,8 +603,8 @@ runScript() {
         esac
     done
 
+    clear
     if [ -d "$HOME/Documents" ]; then
-        clear
         dialog --title "calsais" --msgbox "\nNow, we will finish the installation. Press OK and wait." 7 60
         getDotfiles
         dialog --title "calsais" --msgbox "\nAll done!" 7 15
@@ -621,11 +638,11 @@ runScript() {
         checkForSystemdUnit "systemd units" "graphical.target"
         systemctl --no-block start reflector.service
         welcomeMsg="Welcome to calsais!"
-        echo "Please wait..."
+        printLogo
         pacman -Sy --needed --noconfirm dialog 2>&1 | debug
+        tput reset
     fi
 
-    clear
     trap 'printAndExit "Received SIGINT signal."' INT
     calcAndRun dialog --title "calsais" --msgbox "\"\n${welcomeMsg}\"" 7 WIDTH
 
@@ -639,3 +656,4 @@ runScript() {
 }
 
 runScript "$@"
+
