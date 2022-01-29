@@ -362,13 +362,13 @@ calcWidth() {
         fi
         ((count++))
     done
-    [ $option -ge $count ] && count=option
+    [ $option -ge "$count" ] && count=option
     echo $((count+3))
 }
 
 calcHeight() {
-    newlines=$(printf "$1" | grep -c $'\n')
-    chars=$(echo "$1" | wc -c)
+    newlines=$(echo -ne | grep -c $'\n')
+    chars=${#1}
     height=$(echo "$chars" "$newlines" | awk '{
         x = (($1 - $2 + ($2 * 60)) / 60)
         printf "%d", (x == int(x)) ? x : int(x) + 1
