@@ -586,8 +586,8 @@ runScript() {
         esac
     done
 
-    clear
     if [ -d "$HOME/Documents" ]; then
+        clear
         dialog --title "calsais" --msgbox "\nNow, we will finish the installation. Press OK and wait." 7 60
         getDotfiles
         dialog --title "calsais" --msgbox "\nAll done!" 7 15
@@ -623,9 +623,9 @@ runScript() {
         welcomeMsg="Welcome to calsais!"
         echo "Please wait..."
         pacman -Sy --needed --noconfirm dialog 2>&1 | debug
-        clear
     fi
 
+    clear
     trap 'printAndExit "Received SIGINT signal."' INT
     calcAndRun dialog --title "calsais" --msgbox "\"\n${welcomeMsg}\"" 7 WIDTH
 
