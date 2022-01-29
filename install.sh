@@ -342,7 +342,7 @@ calcAndRun() {
         ((i++))
     done
     dim=$($function "$str")
-    comm="${*//${dimName^^}/$dim}"
+    comm=$(sed "s/${dimName^^}/$dim/g" <(echo "$@"))
     if [[ $comm != *"3>&1 1>&2 2>&3" ]]; then
         comm="${comm} 3>&1 1>&2 2>&3"
     fi
