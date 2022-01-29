@@ -251,7 +251,8 @@ checkForParu() {
         runInChroot "sed -i 's/# %wheel ALL=(ALL) NOPASSWD: ALL/%wheel ALL=(ALL) NOPASSWD: ALL/' /etc/sudoers"
         checkSudoers
         printWaitBox
-        runInChroot "cd /tmp; sudo -u $username git clone https://aur.archlinux.org/paru-bin.git; cd paru-bin; sudo -u $username makepkg -si --noconfirm; cd ..; rm -rf paru-bin" 2>&1 | debug
+        runInChroot "cd /tmp; sudo -u $username git clone https://aur.archlinux.org/paru-bin.git"
+        runInChroot "cd /tmp/paru-bin; sudo -u $username makepkg -si --noconfirm; cd ..; rm -rf paru-bin" 2>&1 | debug
     fi
 }
 
@@ -266,7 +267,8 @@ getThePackages() {
         local IFS=$'\n'
         setDelimiters "" "ON"
         formatOptions <(grep "N" packages.csv | sed -n '2~1p' | cut -d',' -f1)
-        packages=$(dialog --separate-output --checklist "\nIf you don't want to install any packages, press Cancel." 28 46 19 "${options[@]}" 3>&1 1>&2 2>&3)
+        msg="\nIf you don't want to install any packages, press Cancel."
+        packages=$(dialog --separate-output --checklist "$msg" 28 46 19 "${options[@]}" 3>&1 1>&2 2>&3)
         tempFile=$(mktemp)
         for package in $packages; do
             grep "^$package," packages.csv >> "$tempFile"
@@ -285,7 +287,8 @@ getThePackages() {
 }
 
 installImportantPackages() {
-    dialog --msgbox "\nWe will continue with the installation of some important packages in the background. Please press OK and wait." 8 60
+    msg="\nWe will continue with the installation of some important packages in the background. Please press OK and wait."
+    dialog --msgbox "$msg" 8 60
     pacman -Sy --noconfirm archlinux-keyring 2>&1 | debug
     getThePackages "Y" "installImportantPackages"
     runInChroot "systemctl enable NetworkManager; systemctl enable fstrim.timer" 2>&1 | debug
