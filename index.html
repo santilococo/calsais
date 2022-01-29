@@ -334,7 +334,7 @@ networkConf() {
 }
 
 calcAndRun() {
-    argc="$#"; i=1
+    argc="$#"; local i=1
     for item in "$@"; do
         [ $i -eq $((argc-2)) ] && str="$item"
         [ "$item" = "WIDTH" ] && { function="calcWidth"; dimName="width"; }
