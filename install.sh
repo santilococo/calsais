@@ -333,9 +333,41 @@ networkConf() {
     unset hostname
 }
 
+calcWidthDialog() {
+    str=$1; count=1; found=false; option=1
+    for (( i = 0; i < ${#str}; i++ )); do
+        if [ "${str:$i:1}" = "\\" ] && [ "${str:$((i+1)):1}" = "n" ]; then
+            [ $count -ge $option ] && option=$count
+            found=true
+            count=-1
+        fi
+        ((count++))
+    done
+    [ $option -ge $count ] && count=option
+    echo $((count+3))
+}
+
+calcHeightDialog() {
+    newlines=$(printf "$1" | grep -c $'\n')
+    chars=$(echo "$1" | wc -c)
+    height=$(echo "$chars" "$newlines" | awk '{
+        x = (($1 - $2 + ($2 * 60)) / 60)
+        printf "%d", (x == int(x)) ? x : int(x) + 1
+    }')
+    echo $((4+height))
+}
+
 calcWidthAndRun() {
-    width=$(echo "$@" | grep -oP '(?<=").*?(?=")' | wc -c)
-    comm=$(echo "$@" | sed "s/WIDTH/$((width+8))/g")
+    argc="$#"; i=1
+    for item in "$@"; do
+        if [ $i -eq $((argc-2)) ]; then
+            str="$item"
+            break
+        fi
+        ((i++))
+    done
+    width=$(calcWidthDialog "$str")
+    comm=$(echo "$@" | sed "s/WIDTH/$width/g")
     if [[ $comm != *"3>&1 1>&2 2>&3" ]]; then
         comm="${comm} 3>&1 1>&2 2>&3"
     fi
@@ -346,14 +378,16 @@ calcWidthAndRun() {
 }
 
 calcHeightAndRun() {
-    str=$(echo "$@" | grep -oP '(?<=").*?(?=")')
-    newlines=$(printf "$str" | grep -c $'\n')
-    chars=$(echo "$str" | wc -c)
-    height=$(echo "$chars" "$newlines" | awk '{
-        x = (($1 - $2 + ($2 * 60)) / 60)
-        printf "%d", (x == int(x)) ? x : int(x) + 1
-    }')
-    comm=$(echo "$@" | sed "s/HEIGHT/$((5+height))/g")
+    argc="$#"; i=1
+    for item in "$@"; do
+        if [ $i -eq $((argc-2)) ]; then
+            str="$item"
+            break
+        fi
+        ((i++))
+    done
+    height=$(calcHeightDialog "$str")
+    comm=$(echo "$@" | sed "s/HEIGHT/$height/g")
     if [[ $comm != *"3>&1 1>&2 2>&3" ]]; then
         comm="${comm} 3>&1 1>&2 2>&3"
     fi
