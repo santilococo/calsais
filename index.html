@@ -626,7 +626,9 @@ runScript() {
         clear
     fi
 
-    trap 'printAndExit "You pressed <Ctrl-c/d> or exit calsais script."' INT QUIT TERM
+    trap 'printAndExit "Received SIGINT signal."' INT
+    trap 'printAndExit "Received SIGQUIT signal."' QUIT
+    trap 'printAndExit "Received SIGTERM signal."' TERM
     calcAndRun dialog --title "calsais" --msgbox "\"\n${welcomeMsg}\"" 7 WIDTH
 
     while [ $i -lt "${#steps[@]}" ]; do
