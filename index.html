@@ -621,7 +621,7 @@ runScript() {
         systemctl --no-block start reflector.service
         welcomeMsg="Welcome to calsais!"
         echo "Please wait..."
-        pacman -Sy --needed --noconfirm dialog
+        pacman -Sy --needed --noconfirm dialog 2>&1 | debug
         clear
     fi
 
