@@ -595,7 +595,7 @@ runScript() {
     fi
 
     if [ ! -f "/etc/dialogrc" ]; then
-        curl -LO "https://raw.githubusercontent.com/santilococo/calsais/master/.dialogrc" 2>&1 | debug
+        curl -LO "https://raw.githubusercontent.com/santilococo/cdotfis/master/dotfiles/.dialogrc" 2>&1 | debug
         mv .dialogrc /etc/dialogrc
     fi
 
