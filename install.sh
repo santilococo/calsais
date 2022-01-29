@@ -23,7 +23,7 @@ updateSystemClock() {
 
 printAndExit() {
     str="${1} Therefore, the installation process will stop, but you can continue where you left off by running:\n\nsh calsais"
-    calcHeightAndRun dialog --msgbox "\"\n${str}\"" HEIGHT 59
+    calcAndRun dialog --msgbox "\"\n${str}\"" HEIGHT 59
     exit 1
 }
 
@@ -200,7 +200,7 @@ debug() {
 }
 
 installPackage() {
-    calcWidthAndRun dialog --infobox "\"\nInstalling '$1'.\"" 5 WIDTH
+    calcAndRun dialog --infobox "\"\nInstalling '$1'.\"" 5 WIDTH
     case ${3} in
         A)
             if [ "$debugFlagToStdout" = true ] || [ "$debugFlag" = true ]; then
@@ -353,7 +353,7 @@ calcAndRun() {
 }
 
 askForPassword() {
-    password=$(calcWidthAndRun dialog --insecure --passwordbox "\"\nNow, enter the password for santioaguit-pc.\"" 10 WIDTH)
+    password=$(calcAndRun dialog --insecure --passwordbox "\"\nNow, enter the password for santioaguit-pc.\"" 10 WIDTH)
     exitIfCancel "You must enter a password."
     passwordRep=$(dialog --insecure --passwordbox "\nReenter password." 10 30 3>&1 1>&2 2>&3)
     exitIfCancel "You must enter a password."
@@ -416,7 +416,7 @@ loadVar() {
 tryLoadVar() {
     loadVar "$1"
     if [ -z "${!1}" ]; then
-        calcWidthAndRun dialog --msgbox "\"\nCouldn't load '$1'. Try to run the script again.\"" 7 WIDTH
+        calcAndRun dialog --msgbox "\"\nCouldn't load '$1'. Try to run the script again.\"" 7 WIDTH
         rm -f calsais.vars
         exit 1
     fi
@@ -496,7 +496,7 @@ checkForSystemdUnit() {
         systemctl is-active --quiet "${2}" && return
     fi
     forceExit=false
-    calcWidthAndRun dialog --infobox "\"\nWaiting for the ${1} to finish. Please wait.\"" 5 WIDTH
+    calcAndRun dialog --infobox "\"\nWaiting for the ${1} to finish. Please wait.\"" 5 WIDTH
     if [ "${3}" = "oneshot" ]; then
         while [ $forceExit = false ]; do
             result=$(systemctl show -p ActiveState --value "${2}")
@@ -585,7 +585,7 @@ runScript() {
         clear
     fi
 
-    calcWidthAndRun dialog --title "calsais" --msgbox "\"\n${welcomeMsg}\"" 7 WIDTH
+    calcAndRun dialog --title "calsais" --msgbox "\"\n${welcomeMsg}\"" 7 WIDTH
 
     while [ $i -lt "${#steps[@]}" ]; do
         step=${steps[$i]}
