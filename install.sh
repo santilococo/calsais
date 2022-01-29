@@ -337,8 +337,8 @@ calcAndRun() {
     argc="$#"; i=1
     for item in "$@"; do
         [ $i -eq $((argc-2)) ] && str="$item"
-        [ "$item" = "WIDTH" ] && { function="calcWidthDialog"; dimName="width"; }
-        [ "$item" = "HEIGHT" ] && { function="calcHeightDialog"; dimName="height"; }
+        [ "$item" = "WIDTH" ] && { function="calcWidth"; dimName="width"; }
+        [ "$item" = "HEIGHT" ] && { function="calcHeight"; dimName="height"; }
         ((i++))
     done
     dim=$($function "$str")
@@ -350,6 +350,30 @@ calcAndRun() {
     exitStatus=$?
     [ -n "$commOutput" ] && echo "$commOutput"
     return $exitStatus
+}
+
+calcWidth() {
+    str=$1; count=1; found=false; option=1
+    for (( i = 0; i < ${#str}; i++ )); do
+        if [ "${str:$i:1}" = "\\" ] && [ "${str:$((i+1)):1}" = "n" ]; then
+            [ $count -ge $option ] && option=$count
+            found=true
+            count=-1
+        fi
+        ((count++))
+    done
+    [ $option -ge $count ] && count=option
+    echo $((count+3))
+}
+
+calcHeight() {
+    newlines=$(printf "$1" | grep -c $'\n')
+    chars=$(echo "$1" | wc -c)
+    height=$(echo "$chars" "$newlines" | awk '{
+        x = (($1 - $2 + ($2 * 60)) / 60)
+        printf "%d", (x == int(x)) ? x : int(x) + 1
+    }')
+    echo $((4+height))
 }
 
 askForPassword() {
