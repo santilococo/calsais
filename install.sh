@@ -576,7 +576,7 @@ EOF
 
 printLogo() {
     tput bold
-    tput setaf 4
+    tput setaf 2
     cat << END
                         ,,                     ,,          
                       \`7MM                     db          
