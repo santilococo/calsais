@@ -634,7 +634,9 @@ runScript() {
         systemctl --no-block start reflector.service
         welcomeMsg="Welcome to calsais!"
         printLogo
+        sed -i -e '/^\[extra\]/,/^Include/ s/^/#/' -e '/^\[community\]/,/^Include/ s/^/#/' /etc/pacman.d/pacman.conf
         pacman -Sy --needed --noconfirm dialog 2>&1 | debug
+        sed -i -e '/\[extra\]/,/Include/ s/^#//' -e '/\[community\]/,/Include/ s/^#//' /etc/pacman.d/pacman.conf
         tput reset
     fi
 
@@ -642,7 +644,7 @@ runScript() {
         curl -LO "https://raw.githubusercontent.com/santilococo/cdotfis/master/dotfiles/.dialogrc" 2>&1 | debug
         mv .dialogrc /etc/dialogrc
     fi
-    
+
     trap 'printAndExit "Received SIGINT signal."' INT
     calcAndRun dialog --title "calsais" --msgbox "\"\n${welcomeMsg}\"" 7 WIDTH
 
