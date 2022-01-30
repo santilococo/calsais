@@ -211,7 +211,6 @@ installPackage() {
             else
                 pacstrap /mnt --needed "${1}" 2>&1 | debug
             fi
-            exit
             ;;
         B)
             flag=""
@@ -291,7 +290,7 @@ installImportantPackages() {
     msg="\nWe will continue with the installation of some important packages in the background. Please press OK and wait."
     dialog --msgbox "$msg" 8 60
     dialog --infobox "\nUpgrading archlinux-keyring." 5 32
-    pacman -S --noconfirm archlinux-keyring 2>&1 | debug
+    pacman -Sy --noconfirm archlinux-keyring 2>&1 | debug
     getThePackages "Y" "installImportantPackages"
     runInChroot "systemctl enable NetworkManager; systemctl enable fstrim.timer" 2>&1 | debug
 }
