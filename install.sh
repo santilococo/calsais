@@ -638,7 +638,7 @@ runScript() {
         printLogo
         sed -i -e '/^\[extra\]/,/^Include/ s/^/#/' -e '/^\[community\]/,/^Include/ s/^/#/' /etc/pacman.conf
         pacman -Sy --needed --noconfirm dialog 2>&1 | debug
-        # sed -i -e '/\[extra\]/,/Include/ s/^#//' -e '/\[community\]/,/Include/ s/^#//' /etc/pacman.conf
+        sed -i -e '/\[extra\]/,/Include/ s/^#//' -e '/\[community\]/,/Include/ s/^#//' /etc/pacman.conf
     fi
 
     if [ ! -f "/etc/dialogrc" ]; then
