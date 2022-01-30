@@ -611,11 +611,6 @@ runScript() {
         exit 0
     fi
 
-    if [ ! -f "/etc/dialogrc" ]; then
-        curl -LO "https://raw.githubusercontent.com/santilococo/cdotfis/master/dotfiles/.dialogrc" 2>&1 | debug
-        mv .dialogrc /etc/dialogrc
-    fi
-
     local i=0; found=false
     loadVar "lastStep"
     if [ -n "$lastStep" ]; then
@@ -643,6 +638,11 @@ runScript() {
         tput reset
     fi
 
+    if [ ! -f "/etc/dialogrc" ]; then
+        curl -LO "https://raw.githubusercontent.com/santilococo/cdotfis/master/dotfiles/.dialogrc" 2>&1 | debug
+        mv .dialogrc /etc/dialogrc
+    fi
+    
     trap 'printAndExit "Received SIGINT signal."' INT
     calcAndRun dialog --title "calsais" --msgbox "\"\n${welcomeMsg}\"" 7 WIDTH
 
