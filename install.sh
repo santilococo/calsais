@@ -637,7 +637,6 @@ runScript() {
         sed -i -e '/^\[extra\]/,/^Include/ s/^/#/' -e '/^\[community\]/,/^Include/ s/^/#/' /etc/pacman.conf
         pacman -Sy --needed --noconfirm dialog 2>&1 | debug
         sed -i -e '/\[extra\]/,/Include/ s/^#//' -e '/\[community\]/,/Include/ s/^#//' /etc/pacman.conf
-        tput reset
     fi
 
     if [ ! -f "/etc/dialogrc" ]; then
@@ -645,6 +644,7 @@ runScript() {
         mv .dialogrc /etc/dialogrc
     fi
 
+    tput reset
     trap 'printAndExit "Received SIGINT signal."' INT
     calcAndRun dialog --title "calsais" --msgbox "\"\n${welcomeMsg}\"" 7 WIDTH
 
