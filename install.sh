@@ -634,9 +634,9 @@ runScript() {
         systemctl --no-block start reflector.service
         welcomeMsg="Welcome to calsais!"
         printLogo
-        sed -i -e '/^\[extra\]/,/^Include/ s/^/#/' -e '/^\[community\]/,/^Include/ s/^/#/' /etc/pacman.d/pacman.conf
+        sed -i -e '/^\[extra\]/,/^Include/ s/^/#/' -e '/^\[community\]/,/^Include/ s/^/#/' /etc/pacman.conf
         pacman -Sy --needed --noconfirm dialog 2>&1 | debug
-        sed -i -e '/\[extra\]/,/Include/ s/^#//' -e '/\[community\]/,/Include/ s/^#//' /etc/pacman.d/pacman.conf
+        sed -i -e '/\[extra\]/,/Include/ s/^#//' -e '/\[community\]/,/Include/ s/^#//' /etc/pacman.conf
         tput reset
     fi
 
