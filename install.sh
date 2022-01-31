@@ -589,6 +589,7 @@ printLogo() {
      YMbmd'  \`Moo9^Yo  JMML M9mmmP' \`Moo9^Yo  JMML M9mmmP' 
     ======================================================
 END
+    tput sgr0
     printf '\n\n\n%s\n' "Please wait..."
 }
 
@@ -659,4 +660,3 @@ runScript() {
 }
 
 runScript "$@"
-
