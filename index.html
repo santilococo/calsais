@@ -304,10 +304,10 @@ setTimeZone() {
     dialog --msgbox "\nNow, we will set the timezone." 7 34
     setDelimiters ""
     formatOptions <(find -H /usr/share/zoneinfo -maxdepth 1 -mindepth 1 -type d -printf '%f\n' | sort | awk '!/posix/ && !/right/')
-    region=$(dialog --menu "Select a region." 0 21 14 "${options[@]}" 3>&1 1>&2 2>&3)
+    region=$(dialog --menu "Select a region." 0 26 15 "${options[@]}" 3>&1 1>&2 2>&3)
     exitIfCancel "You must select a region."
     formatOptions <(find -H "/usr/share/zoneinfo/${region}" -maxdepth 1 -mindepth 1 -type f -printf '%f\n' | sort)
-    city=$(dialog --menu "Select a city." 0 23 14 "${options[@]}" 3>&1 1>&2 2>&3)
+    city=$(dialog --menu "Select a city." 0 26 15 "${options[@]}" 3>&1 1>&2 2>&3)
     exitIfCancel "You must select a city."
 
     ln -sf "/mnt/usr/share/zoneinfo/${region}/${city}" /mnt/etc/localtime
