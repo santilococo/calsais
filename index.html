@@ -324,7 +324,7 @@ setLocale() {
 }
 
 networkConf() {
-    hostname=$(dialog --inputbox "\nEnter the hostname." 9 28 3>&1 1>&2 2>&3)
+    hostname=$(dialog --inputbox "\nEnter the hostname." 10 28 3>&1 1>&2 2>&3)
     exitIfCancel "You must enter a hostname."
     echo "${hostname}" > /mnt/etc/hostname
     echo "
