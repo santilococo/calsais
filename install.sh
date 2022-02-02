@@ -310,7 +310,7 @@ setTimeZone() {
     city=$(dialog --menu "Select a city." 0 26 15 "${options[@]}" 3>&1 1>&2 2>&3)
     exitIfCancel "You must select a city."
 
-    ln -sf "/mnt/usr/share/zoneinfo/${region}/${city}" /mnt/etc/localtime
+    runInChroot "ln -sf \"/usr/share/zoneinfo/${region}/${city}\" /etc/localtime"
     printWaitBox
     runInChroot "hwclock --systohc"
 }
