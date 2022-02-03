@@ -29,4 +29,4 @@ The script only supports UEFI boot mode.
 PRs are welcome.
 
 ## License <a name="license"></a>
-[GNU GPLv3](https://choosealicense.com/licenses/gpl-3.0/)
+[GNU GPLv3](https://raw.githubusercontent.com/santilococo/calsais/master/LICENSE.md)
