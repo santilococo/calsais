@@ -569,9 +569,9 @@ usage() {
     cat << EOF
 usage: ${0##*/} [command]
     -h      Print this help message.
-    -d      Print log to stdout and calsais.log file.
+    -d      Print log to STDOUT and calsais.log file.
     -f      Print log to calsais.log file.
-    -s      Print log to stdout.
+    -s      Print log to STDOUT.
 EOF
 }
 
