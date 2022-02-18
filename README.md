@@ -11,13 +11,13 @@ Arch semi-automatic installation script.
 
 Run
 
-```bash
+```
 curl -LO slococo.com.ar/calsais
 ```
 
 and then
 
-```bash
+```
 sh calsais
 ```
 
