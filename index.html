@@ -504,7 +504,7 @@ finishInstallation() {
 getDotfiles() {
     lastFolder=$(pwd -P)
     cd "$HOME/Documents" || printAndExit "Couldn't cd into $HOME/Documents"
-    git clone https://github.com/santilococo/cdotfis.git 2>&1 | debug
+    git clone --recursive https://github.com/santilococo/cdotfis.git 2>&1 | debug
     cd cdotfis || printAndExit "Couldn't cd into ./cdotfis"
     sh sadedot/scripts/bootstrap.sh
     cd "$lastFolder" || printAndExit "Couldn't cd into $lastFolder"
