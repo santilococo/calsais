@@ -248,7 +248,7 @@ installPackage() {
 checkForParu() {
     commOutput=$(runInChroot "command -v paru > /dev/null 2>&1 || echo 1")
     if [ "$commOutput" = "1" ]; then
-        runInChroot "sed -i 's/# %wheel ALL=(ALL) NOPASSWD: ALL/%wheel ALL=(ALL) NOPASSWD: ALL/' /etc/sudoers"
+        runInChroot "sed -i 's/# %wheel ALL=(ALL:ALL) NOPASSWD: ALL/%wheel ALL=(ALL:ALL) NOPASSWD: ALL/' /etc/sudoers"
         checkSudoers
         printWaitBox
         runInChroot "cd /tmp; sudo -u $username git clone https://aur.archlinux.org/paru-bin.git; cd paru-bin; sudo -u $username makepkg -si --noconfirm" 2>&1 | debug
@@ -452,7 +452,7 @@ userSetUp() {
     exitIfCancel "You must enter an username."
     askForPassword "${username}" "userSetUp"
     runInChroot "useradd -m ${username};echo \"${username}:${password}\" | chpasswd; usermod -aG wheel ${username}"
-    runInChroot "sed -i 's/# %wheel ALL=(ALL) ALL/%wheel ALL=(ALL) ALL/' /etc/sudoers"
+    runInChroot "sed -i 's/# %wheel ALL=(ALL:ALL) ALL/%wheel ALL=(ALL:ALL) ALL/' /etc/sudoers"
     checkSudoers
     unset password
 }
