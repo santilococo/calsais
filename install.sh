@@ -524,7 +524,10 @@ checkForSystemdUnit() {
     trapBackup=$(trap)
     trap 'systemctl stop ${2}; forceExit=true' INT
     forceExit=false
-    calcAndRun dialog --infobox "\"\nWaiting for the ${1} to finish. Please wait.\"" 5 WIDTH
+    command -v dialog &> /dev/null
+    if [ $? -eq 0 ]; then
+        calcAndRun dialog --infobox "\"\nWaiting for the ${1} to finish. Please wait.\"" 5 WIDTH
+    fi
     if [ "${3}" = "oneshot" ]; then
         while [ $forceExit = false ]; do
             result=$(systemctl show -p ActiveState --value "${2}")
