@@ -524,8 +524,8 @@ checkForSystemdUnit() {
     trapBackup=$(trap)
     trap 'systemctl stop ${2}; forceExit=true' INT
     forceExit=false
-    command -v dialog &> /dev/null
-    if [ $? -eq 0 ]; then
+    commOutput=$(command -v paru > /dev/null 2>&1 && echo 0)
+    if [ "$commOutput" = "0" ]; then
         calcAndRun dialog --infobox "\"\nWaiting for the ${1} to finish. Please wait.\"" 5 WIDTH
     fi
     if [ "${3}" = "oneshot" ]; then
