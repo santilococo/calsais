@@ -251,8 +251,7 @@ checkForParu() {
         runInChroot "sed -i 's/# %wheel ALL=(ALL) NOPASSWD: ALL/%wheel ALL=(ALL) NOPASSWD: ALL/' /etc/sudoers"
         checkSudoers
         printWaitBox
-        runInChroot "cd /tmp; sudo -u $username git clone https://aur.archlinux.org/paru-bin.git"
-        runInChroot "cd /tmp/paru-bin; sudo -u $username makepkg -si --noconfirm; cd ..; rm -rf paru-bin" 2>&1 | debug
+        runInChroot "cd /tmp; sudo -u $username git clone https://aur.archlinux.org/paru-bin.git; cd paru-bin; sudo -u $username makepkg -si --noconfirm" 2>&1 | debug
     fi
 }
 
