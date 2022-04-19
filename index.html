@@ -261,7 +261,7 @@ getThePackages() {
         printWaitBox
         curl -LO "https://raw.githubusercontent.com/santilococo/calsais/master/packages.csv" 2>&1 | debug
     fi
-    if [ "$IMPORTANT" = "N" ]; then
+    if [ "${1}" = "N" ]; then
         dialog --msgbox "\nA menu will appear where you can deselect the packages you don't want to be installed." 8 59
         local IFS=$'\n'
         setDelimiters "" "ON"
