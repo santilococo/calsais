@@ -483,7 +483,7 @@ installOtherPackages() {
     checkForParu
     getThePackages "N" "installOtherPackages"
     getThePackages "R" "installOtherPackages"
-    runInChroot "sed -i 's/^%wheel ALL=(ALL) NOPASSWD: ALL/# %wheel ALL=(ALL) NOPASSWD: ALL/' /etc/sudoers"
+    runInChroot "sed -i 's/^%wheel ALL=(ALL:ALL) NOPASSWD: ALL/# %wheel ALL=(ALL:ALL) NOPASSWD: ALL/' /etc/sudoers"
     checkSudoers
 }
 
